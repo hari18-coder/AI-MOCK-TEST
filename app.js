@@ -872,19 +872,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Email OTP Authentication Handlers
-  const sendOtpBtn = document.getElementById('sendOtpBtn');
-  const emailInput = document.getElementById('emailInput');
-  const otpSection = document.getElementById('otpSection');
-  const otpInput = document.getElementById('otpInput');
-  const authStatusMessage = document.getElementById('authStatusMessage');
-
   // ==========================================
   // PASSWORD & GOOGLE (GMAIL) AUTHENTICATION
   // ==========================================
-
-  // Confirm Login Button Listener (Email & Password MongoDB Auth)
+  const confirmLoginBtn = document.getElementById('confirmLoginBtn');
+  const usernameInput = document.getElementById('usernameInput');
+  const emailInput = document.getElementById('emailInput');
   const passwordInput = document.getElementById('passwordInput');
+  const authStatusMessage = document.getElementById('authStatusMessage');
 
   if (confirmLoginBtn) {
     confirmLoginBtn.addEventListener('click', async () => {
