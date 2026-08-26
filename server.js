@@ -576,45 +576,78 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Send Email OTP Route (/api/auth/send-otp)
-  if (safePath === '/api/auth/send-otp' || safePath === '\\api\\auth\\send-otp') {
+  // User Registration Route (/api/auth/register)
+  if (safePath === '/api/auth/register' || safePath === '\\api\\auth\\register') {
     let body = '';
     req.on('data', chunk => body += chunk);
     req.on('end', async () => {
       try {
         const data = JSON.parse(body || '{}');
-        const { email } = data;
-        if (!email || !email.includes('@')) {
+        const { email, password, username, role } = data;
+        const cleanEmail = String(email || '').trim().toLowerCase();
+        const cleanPassword = String(password || '').trim();
+
+        if (!cleanEmail || !cleanEmail.includes('@')) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
           return res.end(JSON.stringify({ error: 'Please enter a valid email address.' }));
         }
 
-        const otp = String(Math.floor(100000 + Math.random() * 900000));
-        otpStore[email.toLowerCase()] = {
-          otp,
-          expires: Date.now() + 5 * 60 * 1000
-        };
-
-        // Persist OTP Request to MongoDB
-        if (mongoConnected && db) {
-          try {
-            await db.collection('otps').updateOne(
-              { email: email.toLowerCase() },
-              { $set: { email: email.toLowerCase(), otp, expiresAt: new Date(Date.now() + 5 * 60 * 1000), createdAt: new Date() } },
-              { upsert: true }
-            );
-          } catch (mErr) {
-            console.warn("MongoDB OTP insert notice:", mErr.message);
-          }
+        if (!cleanPassword || cleanPassword.length < 4) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ error: 'Password must be at least 4 characters long.' }));
         }
 
-        console.log(`📧 [AUTH OTP] Sent Verification OTP ${otp} to ${email}`);
+        const userDoc = {
+          email: cleanEmail,
+          password: cleanPassword,
+          username: username || cleanEmail.split('@')[0],
+          role: role || 'student',
+          authMethod: 'password',
+          isVerified: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+
+        const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+        const loginLogDoc = {
+          loginId: 'LOG-R-' + Date.now().toString(36).toUpperCase(),
+          email: cleanEmail,
+          username: userDoc.username,
+          role: userDoc.role,
+          authMethod: 'password_register',
+          status: 'SUCCESS (REGISTERED)',
+          ip: clientIp,
+          userAgent: req.headers['user-agent'] || 'Unknown',
+          timestamp: new Date()
+        };
+
+        inMemoryLogins.unshift(loginLogDoc);
+
+        if (mongoConnected && db) {
+          try {
+            const existingUser = await db.collection('users').findOne({ email: cleanEmail });
+            if (existingUser && existingUser.password && existingUser.password !== cleanPassword) {
+              res.writeHead(400, { 'Content-Type': 'application/json' });
+              return res.end(JSON.stringify({ error: 'Email already registered with a different password.' }));
+            }
+
+            await db.collection('users').updateOne(
+              { email: cleanEmail },
+              { $set: userDoc },
+              { upsert: true }
+            );
+            await db.collection('login_logs').insertOne(loginLogDoc);
+            console.log(`🍃 [MONGODB REGISTER] Registered user [${cleanEmail}] as [${userDoc.role}]`);
+          } catch (mErr) {
+            console.warn("MongoDB User register notice:", mErr.message);
+          }
+        }
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({
           success: true,
-          message: `Verification OTP code sent to ${email}`,
-          otpDemo: otp
+          message: 'Account registered successfully!',
+          user: userDoc
         }));
       } catch (e) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -624,83 +657,91 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Verify Email OTP Route (/api/auth/verify-otp)
-  if (safePath === '/api/auth/verify-otp' || safePath === '\\api\\auth\\verify-otp') {
+  // User Password Login Route (/api/auth/login)
+  if (safePath === '/api/auth/login' || safePath === '\\api\\auth\\login') {
     let body = '';
     req.on('data', chunk => body += chunk);
     req.on('end', async () => {
       try {
         const data = JSON.parse(body || '{}');
-        const { email, otp, username, role } = data;
+        const { email, password, role } = data;
         const cleanEmail = String(email || '').trim().toLowerCase();
-        const cleanOtp = String(otp || '').trim();
+        const cleanPassword = String(password || '').trim();
 
-        let record = otpStore[cleanEmail];
-
-        // Fallback check in MongoDB if memory record is missing
-        if (!record && mongoConnected && db) {
-          try {
-            const mongoRecord = await db.collection('otps').findOne({ email: cleanEmail });
-            if (mongoRecord) {
-              record = {
-                otp: mongoRecord.otp,
-                expires: mongoRecord.expiresAt ? new Date(mongoRecord.expiresAt).getTime() : Date.now() + 300000
-              };
-            }
-          } catch (mErr) {
-            console.warn("MongoDB OTP lookup notice:", mErr.message);
-          }
-        }
-
-        // Validate OTP record
-        if (!record) {
-          if (cleanOtp.length === 6) {
-            record = { otp: cleanOtp, expires: Date.now() + 300000 };
-          } else {
-            res.writeHead(400, { 'Content-Type': 'application/json' });
-            return res.end(JSON.stringify({ error: 'No OTP requested for this email. Please click Send OTP.' }));
-          }
-        }
-
-        if (record.expires && Date.now() > record.expires) {
+        if (!cleanEmail || !cleanEmail.includes('@')) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ error: 'OTP code has expired. Please request a new OTP.' }));
+          return res.end(JSON.stringify({ error: 'Please enter a valid email address.' }));
         }
 
-        if (record.otp && record.otp !== cleanOtp) {
+        if (!cleanPassword) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ error: 'Invalid OTP code. Please check and try again.' }));
+          return res.end(JSON.stringify({ error: 'Please enter your password.' }));
         }
 
-        delete otpStore[cleanEmail];
-
-        const userDoc = {
-          email: cleanEmail,
-          username: username || 'Scholar',
-          role: role || 'student',
-          isVerified: true,
-          verifiedAt: new Date(),
-          updatedAt: new Date()
-        };
-
-        // Persist User Signup Details to MongoDB Collection ('users')
+        let userDoc = null;
         if (mongoConnected && db) {
           try {
-            await db.collection('users').updateOne(
-              { email: email.toLowerCase() },
-              { $set: userDoc },
-              { upsert: true }
-            );
-            console.log(`🍃 [MONGODB persistent] Saved registered user details for [${email}] role: ${role}`);
+            userDoc = await db.collection('users').findOne({ email: cleanEmail });
           } catch (mErr) {
-            console.warn("MongoDB User save notice:", mErr.message);
+            console.warn("MongoDB User lookup notice:", mErr.message);
           }
+        }
+
+        if (userDoc) {
+          if (userDoc.password && userDoc.password !== cleanPassword) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ error: 'Incorrect password. Please check and try again.' }));
+          }
+        } else {
+          // Auto-create account if first login
+          userDoc = {
+            email: cleanEmail,
+            password: cleanPassword,
+            username: cleanEmail.split('@')[0],
+            role: role || 'student',
+            authMethod: 'password',
+            isVerified: true,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          };
+
+          if (mongoConnected && db) {
+            try {
+              await db.collection('users').updateOne(
+                { email: cleanEmail },
+                { $set: userDoc },
+                { upsert: true }
+              );
+            } catch (mErr) {}
+          }
+        }
+
+        const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+        const loginLogDoc = {
+          loginId: 'LOG-L-' + Date.now().toString(36).toUpperCase(),
+          email: cleanEmail,
+          username: userDoc.username,
+          role: userDoc.role || role || 'student',
+          authMethod: 'password_login',
+          status: 'SUCCESS (LOGIN)',
+          ip: clientIp,
+          userAgent: req.headers['user-agent'] || 'Unknown',
+          timestamp: new Date()
+        };
+
+        inMemoryLogins.unshift(loginLogDoc);
+
+        if (mongoConnected && db) {
+          try {
+            await db.collection('login_logs').insertOne(loginLogDoc);
+            console.log(`🌐 [PASSWORD LOGIN SUCCESS] Signed in user [${cleanEmail}] as [${userDoc.role}]`);
+          } catch (mErr) {}
         }
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({
           success: true,
-          message: 'Email verified successfully!',
+          message: 'Logged in successfully!',
           user: userDoc
         }));
       } catch (e) {

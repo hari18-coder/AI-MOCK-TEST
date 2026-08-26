@@ -879,9 +879,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const otpInput = document.getElementById('otpInput');
   const authStatusMessage = document.getElementById('authStatusMessage');
 
-  if (sendOtpBtn) {
-    sendOtpBtn.addEventListener('click', async () => {
+  // ==========================================
+  // PASSWORD & GOOGLE (GMAIL) AUTHENTICATION
+  // ==========================================
+
+  // Confirm Login Button Listener (Email & Password MongoDB Auth)
+  const passwordInput = document.getElementById('passwordInput');
+
+  if (confirmLoginBtn) {
+    confirmLoginBtn.addEventListener('click', async () => {
+      const username = usernameInput ? usernameInput.value.trim() : 'User';
       const email = emailInput ? emailInput.value.trim() : '';
+      const password = passwordInput ? passwordInput.value.trim() : '';
+      const role = currentProfession === 'teacher' ? 'staff' : currentProfession;
+
       if (!email || !email.includes('@')) {
         if (authStatusMessage) {
           authStatusMessage.className = 'qb-status-msg error';
@@ -891,105 +902,45 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const origText = sendOtpBtn.textContent;
-      sendOtpBtn.disabled = true;
-      sendOtpBtn.textContent = 'SENDING...';
-
-      try {
-        const response = await fetch('/api/auth/send-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-          const otpDisplayBanner = document.getElementById('otpDisplayBanner');
-          if (otpDisplayBanner && data.otpDemo) otpDisplayBanner.textContent = data.otpDemo;
-
-          if (otpSection) otpSection.classList.remove('hidden');
-          if (otpInput && data.otpDemo) otpInput.value = data.otpDemo;
-
-          if (authStatusMessage) {
-            authStatusMessage.className = 'qb-status-msg success';
-            authStatusMessage.textContent = `📧 Verification OTP issued: ${data.otpDemo} (Sent to ${email})`;
-            authStatusMessage.classList.remove('hidden');
-          }
-
-          alert(`📩 VERIFICATION OTP CODE ISSUED: [ ${data.otpDemo} ]\n\nYour 6-digit verification code has been issued and auto-filled below! Click "VERIFY OTP & ENTER ASSESSMENT PORTAL ▶" to continue.`);
-        } else {
-          if (authStatusMessage) {
-            authStatusMessage.className = 'qb-status-msg error';
-            authStatusMessage.textContent = `❌ ${data.error || 'Failed to send OTP.'}`;
-            authStatusMessage.classList.remove('hidden');
-          }
+      if (!password) {
+        if (authStatusMessage) {
+          authStatusMessage.className = 'qb-status-msg error';
+          authStatusMessage.textContent = '❌ Please enter your password.';
+          authStatusMessage.classList.remove('hidden');
         }
-      } catch (err) {
-        const fakeOtp = String(Math.floor(100000 + Math.random() * 900000));
-        if (otpDisplayBanner) otpDisplayBanner.textContent = fakeOtp;
-        if (otpInput) otpInput.value = fakeOtp;
-        if (otpSection) otpSection.classList.remove('hidden');
-      } finally {
-        sendOtpBtn.disabled = false;
-        sendOtpBtn.textContent = origText;
-      }
-    });
-  }
-
-  // Confirm Login Button Listener
-  if (confirmLoginBtn) {
-    confirmLoginBtn.addEventListener('click', async () => {
-      const username = usernameInput ? usernameInput.value.trim() : 'User';
-      const email = emailInput ? emailInput.value.trim() : '';
-      const otp = otpInput ? otpInput.value.trim() : '';
-      const role = currentProfession === 'teacher' ? 'staff' : currentProfession;
-
-      if (currentProfession === 'admin') {
-        const pin = adminPasscodeInput ? adminPasscodeInput.value.trim() : '';
-        if (pin !== 'admin123' && pin !== '1234') {
-          if (authStatusMessage) {
-            authStatusMessage.className = 'qb-status-msg error';
-            authStatusMessage.textContent = '❌ Invalid Administrator Security Key / PIN.';
-            authStatusMessage.classList.remove('hidden');
-          }
-          return;
-        }
-        completeUserLogin({ email: email || 'admin@system.com', username, role: 'admin', authMethod: 'key' });
         return;
       }
 
-      if (otpSection && !otpSection.classList.contains('hidden')) {
-        if (!otp || otp.length !== 6) {
+      const origText = confirmLoginBtn.textContent;
+      confirmLoginBtn.disabled = true;
+      confirmLoginBtn.textContent = 'AUTHENTICATING...';
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, username, role })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          completeUserLogin({
+            email: data.user.email,
+            username: data.user.username || username,
+            role: data.user.role || role,
+            authMethod: 'password'
+          });
+        } else {
           if (authStatusMessage) {
             authStatusMessage.className = 'qb-status-msg error';
-            authStatusMessage.textContent = '❌ Please enter 6-digit OTP code.';
+            authStatusMessage.textContent = `❌ ${data.error || 'Authentication failed'}`;
             authStatusMessage.classList.remove('hidden');
           }
-          return;
         }
-
-        try {
-          const res = await fetch('/api/auth/verify-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, otp, username, role })
-          });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            completeUserLogin({ email, username, role, authMethod: 'otp' });
-          } else {
-            if (authStatusMessage) {
-              authStatusMessage.className = 'qb-status-msg error';
-              authStatusMessage.textContent = `❌ ${data.error || 'Invalid OTP code'}`;
-              authStatusMessage.classList.remove('hidden');
-            }
-          }
-        } catch (e) {
-          completeUserLogin({ email, username, role, authMethod: 'otp' });
-        }
-      } else {
-        completeUserLogin({ email: email || `${username.toLowerCase()}@example.com`, username, role, authMethod: 'direct' });
+      } catch (e) {
+        completeUserLogin({ email, username, role, authMethod: 'password' });
+      } finally {
+        confirmLoginBtn.disabled = false;
+        confirmLoginBtn.textContent = origText;
       }
     });
   }
