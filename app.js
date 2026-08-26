@@ -1013,8 +1013,14 @@ document.addEventListener('DOMContentLoaded', () => {
     updateProfileHud();
     applyRoleUiPermissions(gameState.user.role);
 
-    if (authLoginPage) authLoginPage.classList.add('hidden');
-    if (el.loginModal) el.loginModal.classList.add('hidden');
+    if (authLoginPage) {
+      authLoginPage.classList.add('hidden');
+      authLoginPage.style.display = 'none';
+    }
+    if (el.loginModal) {
+      el.loginModal.classList.add('hidden');
+      el.loginModal.style.display = 'none';
+    }
 
     if (gameState.user.role === 'staff' || gameState.user.role === 'teacher') {
       const teacherQbModal = document.getElementById('teacherQbModal');
@@ -1055,13 +1061,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-      if (authLoginPage) authLoginPage.classList.remove('hidden');
+      if (authLoginPage) {
+        authLoginPage.classList.remove('hidden');
+        authLoginPage.style.display = 'flex';
+      }
     });
   }
 
   if (el.userProfileBtn) {
     el.userProfileBtn.addEventListener('click', () => {
-      if (authLoginPage) authLoginPage.classList.remove('hidden');
+      if (authLoginPage) {
+        authLoginPage.classList.remove('hidden');
+        authLoginPage.style.display = 'flex';
+      }
     });
   }
   if (el.setupGameBtn && el.setupModal) {

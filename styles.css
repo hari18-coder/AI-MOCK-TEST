@@ -60,6 +60,8 @@
   --transition-normal: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.hidden { display: none !important; }
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
