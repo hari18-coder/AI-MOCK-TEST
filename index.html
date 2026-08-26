@@ -21,35 +21,41 @@
         <p class="login-app-subtitle">AI-POWERED ENTERPRISE ASSESSMENT & PROCTORING PLATFORM</p>
       </div>
 
-      <!-- PORTAL SELECTION LANDING HUB (Shown when no role is selected or clicking back) -->
-      <div id="portalHubView" class="portal-hub-container">
-        <h2 class="portal-hub-title">SELECT YOUR AUTHORIZED ASSESSMENT PORTAL</h2>
-        <p class="portal-hub-sub">Isolated, Secure Role-Based Entry for Students, Faculty & Administrators</p>
+      <!-- COMPACT PORTAL SELECTION CHOICE HUB -->
+      <div id="portalHubView" class="portal-hub-container compact-hub">
+        <h2 class="portal-hub-title">CHOOSE YOUR PORTAL</h2>
+        <p class="portal-hub-sub">Select your role to access your dedicated login</p>
         
-        <div class="portal-cards-grid">
-          <!-- Student Portal Card -->
-          <div class="portal-hub-card student-card" id="hubSelectStudentBtn">
-            <div class="portal-card-icon">🎓</div>
-            <h3 class="portal-card-title">STUDENT PORTAL</h3>
-            <p class="portal-card-desc">Access protected tests, AI self-practice assessments, and view real-time score analytics.</p>
-            <button class="portal-card-btn student-btn-theme">ENTER STUDENT PORTAL ▶</button>
-          </div>
+        <div class="portal-choice-row">
+          <!-- Student Option Button -->
+          <button class="portal-choice-card student-choice" id="hubSelectStudentBtn">
+            <div class="portal-choice-icon">🎓</div>
+            <div class="portal-choice-info">
+              <div class="portal-choice-title">STUDENT PORTAL</div>
+              <div class="portal-choice-sub">Online Assessments, AI Practice & Score Analytics</div>
+            </div>
+            <div class="portal-choice-arrow">▶</div>
+          </button>
 
-          <!-- Teacher Portal Card -->
-          <div class="portal-hub-card teacher-card" id="hubSelectTeacherBtn">
-            <div class="portal-card-icon">👨‍🏫</div>
-            <h3 class="portal-card-title">TEACHER PORTAL</h3>
-            <p class="portal-card-desc">Build question banks, publish protected exams, assign tests, and manage faculty subjects.</p>
-            <button class="portal-card-btn teacher-btn-theme">ENTER TEACHER PORTAL ▶</button>
-          </div>
+          <!-- Teacher Option Button -->
+          <button class="portal-choice-card teacher-choice" id="hubSelectTeacherBtn">
+            <div class="portal-choice-icon">👨‍🏫</div>
+            <div class="portal-choice-info">
+              <div class="portal-choice-title">TEACHER PORTAL</div>
+              <div class="portal-choice-sub">Question Bank Builder & Exam Management</div>
+            </div>
+            <div class="portal-choice-arrow">▶</div>
+          </button>
 
-          <!-- Admin Portal Card -->
-          <div class="portal-hub-card admin-card" id="hubSelectAdminBtn">
-            <div class="portal-card-icon">🛡️</div>
-            <h3 class="portal-card-title">ADMIN PORTAL</h3>
-            <p class="portal-card-desc">System administration, live proctoring monitoring, anti-cheat audit logs, and security controls.</p>
-            <button class="portal-card-btn admin-btn-theme">ENTER ADMIN PORTAL ▶</button>
-          </div>
+          <!-- Admin Option Button -->
+          <button class="portal-choice-card admin-choice" id="hubSelectAdminBtn">
+            <div class="portal-choice-icon">🛡️</div>
+            <div class="portal-choice-info">
+              <div class="portal-choice-title">ADMINISTRATOR PORTAL</div>
+              <div class="portal-choice-sub">System Controls, Proctoring & Audit Logs</div>
+            </div>
+            <div class="portal-choice-arrow">▶</div>
+          </button>
         </div>
       </div>
 
