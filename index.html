@@ -12,7 +12,7 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-  <!-- DEDICATED FULL-SCREEN LOGIN PAGE WITH ISOLATED ROLE PORTALS -->
+  <!-- DEDICATED FULL-SCREEN LOGIN PAGE WITH DYNAMIC PROFESSION SELECTOR -->
   <div id="authLoginPage" class="login-page-screen">
     <div class="login-page-container">
       <div class="login-brand-header">
@@ -21,85 +21,64 @@
         <p class="login-app-subtitle">AI-POWERED ENTERPRISE ASSESSMENT & PROCTORING PLATFORM</p>
       </div>
 
-      <!-- COMPACT PORTAL SELECTION CHOICE HUB -->
-      <div id="portalHubView" class="portal-hub-container compact-hub">
-        <h2 class="portal-hub-title">CHOOSE YOUR PORTAL</h2>
-        <p class="portal-hub-sub">Select your role to access your dedicated login</p>
-        
-        <div class="portal-choice-row">
-          <!-- Student Option Button -->
-          <button class="portal-choice-card student-choice" id="hubSelectStudentBtn">
-            <div class="portal-choice-icon">🎓</div>
-            <div class="portal-choice-info">
-              <div class="portal-choice-title">STUDENT PORTAL</div>
-              <div class="portal-choice-sub">Online Assessments, AI Practice & Score Analytics</div>
-            </div>
-            <div class="portal-choice-arrow">▶</div>
-          </button>
-
-          <!-- Teacher Option Button -->
-          <button class="portal-choice-card teacher-choice" id="hubSelectTeacherBtn">
-            <div class="portal-choice-icon">👨‍🏫</div>
-            <div class="portal-choice-info">
-              <div class="portal-choice-title">TEACHER PORTAL</div>
-              <div class="portal-choice-sub">Question Bank Builder & Exam Management</div>
-            </div>
-            <div class="portal-choice-arrow">▶</div>
-          </button>
-
-          <!-- Admin Option Button -->
-          <button class="portal-choice-card admin-choice" id="hubSelectAdminBtn">
-            <div class="portal-choice-icon">🛡️</div>
-            <div class="portal-choice-info">
-              <div class="portal-choice-title">ADMINISTRATOR PORTAL</div>
-              <div class="portal-choice-sub">System Controls, Proctoring & Audit Logs</div>
-            </div>
-            <div class="portal-choice-arrow">▶</div>
-          </button>
-        </div>
-      </div>
-
-      <!-- ISOLATED STUDENT PORTAL LOGIN CARD -->
-      <div id="studentPortalCard" class="login-portal-card isolated-portal hidden">
-        <div class="login-card-badge student-badge">🎓 DEDICATED STUDENT LOGIN & SIGN UP</div>
+      <div class="login-portal-card isolated-portal">
+        <div id="loginPortalBadge" class="login-card-badge student-badge">🎓 STUDENT EVALUATION & ASSESSMENT PORTAL</div>
 
         <div class="login-form-body">
-          <!-- Google / Gmail Single Click Login Button -->
-          <button id="studentGoogleBtn" class="google-auth-btn">
+          
+          <!-- 1. PROFESSION / ROLE SELECTOR (Student, Teacher, Admin) -->
+          <div class="form-group">
+            <label for="professionSelect" class="input-label" style="color: var(--accent-cyan-bright); font-weight: 700; letter-spacing: 1px;">SELECT YOUR PROFESSION / ROLE</label>
+            <div class="profession-pills" id="professionPills">
+              <button type="button" class="profession-pill active" data-role="student">🎓 Student</button>
+              <button type="button" class="profession-pill" data-role="teacher">👨‍🏫 Teacher</button>
+              <button type="button" class="profession-pill" data-role="admin">🛡️ Admin</button>
+            </div>
+            <select id="professionSelect" class="styled-select width-full hidden">
+              <option value="student" selected>🎓 Student</option>
+              <option value="teacher">👨‍🏫 Teacher / Faculty</option>
+              <option value="admin">🛡️ Administrator</option>
+            </select>
+          </div>
+
+          <!-- 2. Google / Gmail Single Click Login Button -->
+          <button id="googleAuthBtn" class="google-auth-btn">
             <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
               <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z"/>
               <path fill="#FBBC05" d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z"/>
               <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"/>
             </svg>
-            <span>SIGN IN / SIGN UP WITH GMAIL (GOOGLE)</span>
+            <span id="googleBtnText">SIGN IN / SIGN UP WITH GMAIL (GOOGLE)</span>
           </button>
 
-          <div class="auth-divider"><span>OR CONTINUE WITH STUDENT EMAIL OTP</span></div>
+          <div class="auth-divider"><span id="dividerText">OR CONTINUE WITH EMAIL OTP</span></div>
 
+          <!-- Name Input -->
           <div class="form-group">
-            <label for="studentNameInput" class="input-label">STUDENT FULL NAME</label>
-            <input type="text" id="studentNameInput" class="text-input" placeholder="e.g. Alex Scholar" value="Scholar">
+            <label for="usernameInput" class="input-label" id="usernameLabel">FULL NAME</label>
+            <input type="text" id="usernameInput" class="text-input" placeholder="e.g. Alex Scholar" value="Scholar">
           </div>
 
-          <div class="form-group">
-            <label for="studentEmailInput" class="input-label">STUDENT GMAIL / EMAIL ADDRESS</label>
+          <!-- Email Input & Send OTP -->
+          <div class="form-group" id="emailGroup">
+            <label for="emailInput" class="input-label" id="emailLabel">GMAIL / EMAIL ADDRESS</label>
             <div style="display: flex; gap: 0.6rem; width: 100%;">
-              <input type="email" id="studentEmailInput" class="text-input" style="flex: 1;" placeholder="candidate@gmail.com" value="scholar@gmail.com">
-              <button id="studentSendOtpBtn" class="hud-btn highlight-btn" style="white-space: nowrap; padding: 0.75rem 1.2rem;">SEND OTP 📧</button>
+              <input type="email" id="emailInput" class="text-input" style="flex: 1;" placeholder="candidate@gmail.com" value="scholar@gmail.com">
+              <button id="sendOtpBtn" class="hud-btn highlight-btn" style="white-space: nowrap; padding: 0.75rem 1.2rem;">SEND OTP 📧</button>
             </div>
           </div>
 
-          <!-- Student OTP Section -->
-          <div id="studentOtpSection" class="form-group hidden" style="background: rgba(16, 185, 129, 0.12); border: 1px dashed var(--accent-emerald-bright); padding: 1.2rem; border-radius: var(--radius-sm); text-align: center;">
-            <div style="font-family: var(--font-tech); font-weight: 700; font-size: 0.82rem; color: var(--accent-cyan-bright); letter-spacing: 1.5px; margin-bottom: 0.3rem;">📩 STUDENT OTP ISSUED</div>
-            <div id="studentOtpDisplay" style="font-family: var(--font-tech); font-weight: 800; font-size: 2.2rem; color: var(--accent-emerald-bright); letter-spacing: 8px; text-shadow: 0 0 16px var(--accent-emerald-glow); margin: 0.2rem 0;">849201</div>
+          <!-- OTP Verification Section -->
+          <div id="otpSection" class="form-group hidden" style="background: rgba(16, 185, 129, 0.12); border: 1px dashed var(--accent-emerald-bright); padding: 1.2rem; border-radius: var(--radius-sm); text-align: center;">
+            <div style="font-family: var(--font-tech); font-weight: 700; font-size: 0.82rem; color: var(--accent-cyan-bright); letter-spacing: 1.5px; margin-bottom: 0.3rem;">📩 VERIFICATION OTP CODE ISSUED</div>
+            <div id="otpDisplayBanner" style="font-family: var(--font-tech); font-weight: 800; font-size: 2.2rem; color: var(--accent-emerald-bright); letter-spacing: 8px; text-shadow: 0 0 16px var(--accent-emerald-glow); margin: 0.2rem 0;">849201</div>
             <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.8rem;">(Code auto-filled below for instant verification)</div>
-            <input type="text" id="studentOtpInput" class="text-input" maxlength="6" placeholder="ENTER 6-DIGIT OTP" style="letter-spacing: 6px; font-weight: 800; text-align: center; font-size: 1.3rem; color: var(--accent-emerald-bright);">
+            <input type="text" id="otpInput" class="text-input" maxlength="6" placeholder="ENTER 6-DIGIT OTP" style="letter-spacing: 6px; font-weight: 800; text-align: center; font-size: 1.3rem; color: var(--accent-emerald-bright);">
           </div>
 
-          <!-- Student Track Selector -->
-          <div class="avatar-selection-box">
+          <!-- Student Evaluation Track Box -->
+          <div id="studentTrackBox" class="avatar-selection-box">
             <span class="input-label">SELECT EVALUATION TRACK</span>
             <div class="avatar-grid">
               <div class="avatar-card selected" data-avatar="🎓" data-name="Quantitative Scholar">
@@ -121,56 +100,8 @@
             </div>
           </div>
 
-          <div id="studentAuthStatus" class="qb-status-msg hidden"></div>
-
-          <button id="studentLoginConfirmBtn" class="modal-primary-btn student-action-btn">VERIFY & ENTER STUDENT PORTAL ▶</button>
-          
-          <div class="back-to-hub-wrapper">
-            <button class="back-to-hub-btn">← Switch / Choose Another Portal</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ISOLATED TEACHER PORTAL LOGIN CARD -->
-      <div id="teacherPortalCard" class="login-portal-card isolated-portal hidden">
-        <div class="login-card-badge teacher-badge">👨‍🏫 DEDICATED TEACHER & FACULTY PORTAL</div>
-
-        <div class="login-form-body">
-          <!-- Google / Gmail Single Click Login Button -->
-          <button id="teacherGoogleBtn" class="google-auth-btn teacher-google-style">
-            <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z"/>
-              <path fill="#FBBC05" d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z"/>
-              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"/>
-            </svg>
-            <span>SIGN IN WITH GMAIL (FACULTY GOOGLE AUTH)</span>
-          </button>
-
-          <div class="auth-divider"><span>OR CONTINUE WITH FACULTY OTP</span></div>
-
-          <div class="form-group">
-            <label for="teacherNameInput" class="input-label">FACULTY / TEACHER NAME</label>
-            <input type="text" id="teacherNameInput" class="text-input" placeholder="e.g. Prof. Vance" value="Prof. Vance">
-          </div>
-
-          <div class="form-group">
-            <label for="teacherEmailInput" class="input-label">FACULTY EMAIL ADDRESS</label>
-            <div style="display: flex; gap: 0.6rem; width: 100%;">
-              <input type="email" id="teacherEmailInput" class="text-input" style="flex: 1;" placeholder="faculty@university.edu" value="faculty@university.edu">
-              <button id="teacherSendOtpBtn" class="hud-btn highlight-btn" style="white-space: nowrap; padding: 0.75rem 1.2rem; background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #10b981;">SEND OTP 📧</button>
-            </div>
-          </div>
-
-          <!-- Teacher OTP Section -->
-          <div id="teacherOtpSection" class="form-group hidden" style="background: rgba(16, 185, 129, 0.12); border: 1px dashed var(--accent-emerald-bright); padding: 1.2rem; border-radius: var(--radius-sm); text-align: center;">
-            <div style="font-family: var(--font-tech); font-weight: 700; font-size: 0.82rem; color: #10b981; letter-spacing: 1.5px; margin-bottom: 0.3rem;">📩 FACULTY OTP ISSUED</div>
-            <div id="teacherOtpDisplay" style="font-family: var(--font-tech); font-weight: 800; font-size: 2.2rem; color: var(--accent-emerald-bright); letter-spacing: 8px; text-shadow: 0 0 16px var(--accent-emerald-glow); margin: 0.2rem 0;">739102</div>
-            <input type="text" id="teacherOtpInput" class="text-input" maxlength="6" placeholder="ENTER 6-DIGIT OTP" style="letter-spacing: 6px; font-weight: 800; text-align: center; font-size: 1.3rem; color: var(--accent-emerald-bright);">
-          </div>
-
-          <!-- Teacher Department Selector -->
-          <div class="form-group">
+          <!-- Teacher Subject / Department Selector Box -->
+          <div id="teacherDeptBox" class="form-group hidden">
             <label for="teacherDeptSelect" class="input-label">DEPARTMENT / FACULTY SUBJECT</label>
             <select id="teacherDeptSelect" class="styled-select width-full">
               <option value="Quantitative Reasoning">Quantitative Aptitude & Mathematics</option>
@@ -180,58 +111,27 @@
             </select>
           </div>
 
-          <div id="teacherAuthStatus" class="qb-status-msg hidden"></div>
-
-          <button id="teacherLoginConfirmBtn" class="modal-primary-btn teacher-action-btn">AUTHENTICATE & ENTER TEACHER PORTAL ▶</button>
-          
-          <div class="back-to-hub-wrapper">
-            <button class="back-to-hub-btn">← Switch / Choose Another Portal</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ISOLATED ADMIN PORTAL LOGIN CARD -->
-      <div id="adminPortalCard" class="login-portal-card isolated-portal hidden">
-        <div class="login-card-badge admin-badge">🛡️ DEDICATED ADMINISTRATOR PORTAL</div>
-
-        <div class="login-form-body">
-          <!-- Google / Gmail Single Click Login Button -->
-          <button id="adminGoogleBtn" class="google-auth-btn admin-google-style">
-            <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z"/>
-              <path fill="#FBBC05" d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z"/>
-              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"/>
-            </svg>
-            <span>SIGN IN WITH GMAIL (ADMINISTRATOR GOOGLE AUTH)</span>
-          </button>
-
-          <div class="auth-divider"><span>OR CONTINUE WITH ADMIN SECURITY KEY</span></div>
-
-          <div class="form-group">
-            <label for="adminNameInput" class="input-label">ADMINISTRATOR NAME</label>
-            <input type="text" id="adminNameInput" class="text-input" placeholder="e.g. System Administrator" value="Admin Overseer">
-          </div>
-
-          <div class="form-group">
-            <label for="adminEmailInput" class="input-label">ADMIN EMAIL ADDRESS</label>
-            <input type="email" id="adminEmailInput" class="text-input" placeholder="admin@system.com" value="admin@system.com">
-          </div>
-
-          <div class="form-group">
+          <!-- Admin Security Passcode Box -->
+          <div id="adminPasscodeBox" class="form-group hidden">
             <label for="adminPasscodeInput" class="input-label" style="color: var(--accent-cyan-bright);">ADMINISTRATOR SECURITY PIN / KEY</label>
-            <input type="password" id="adminPasscodeInput" class="text-input" placeholder="Enter security key (Default: admin123)" value="admin123">
+            <input type="password" id="adminPasscodeInput" class="text-input" placeholder="Enter admin security key (Default: admin123)" value="admin123">
           </div>
 
-          <div id="adminAuthStatus" class="qb-status-msg hidden"></div>
+          <div id="authStatusMessage" class="qb-status-msg hidden"></div>
 
-          <button id="adminLoginConfirmBtn" class="modal-primary-btn admin-action-btn">AUTHENTICATE & ENTER ADMIN AUDIT PORTAL ▶</button>
-          
-          <div class="back-to-hub-wrapper">
-            <button class="back-to-hub-btn">← Switch / Choose Another Portal</button>
-          </div>
+          <button id="confirmLoginBtn" class="modal-primary-btn" style="font-size: 1.05rem; padding: 0.95rem; margin-top: 0.5rem; background: linear-gradient(135deg, #06b6d4, #10b981);">VERIFY & ENTER PORTAL ▶</button>
         </div>
       </div>
+
+      <div class="login-footer-info">
+        <span>🔒 256-Bit Encrypted Access</span>
+        <span>•</span>
+        <span>🌐 Google Gmail Single Sign-On</span>
+        <span>•</span>
+        <span>⚡ AI Proctoring Suite</span>
+      </div>
+    </div>
+  </div>
 
       <div class="login-footer-info">
         <span>🔒 256-Bit Encrypted Role Access</span>

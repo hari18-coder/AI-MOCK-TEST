@@ -989,6 +989,54 @@ canvas#qrCanvas { width: 180px; height: 180px; }
 /* ==========================================
    ISOLATED ROLE PORTALS & GOOGLE (GMAIL) AUTH
    ========================================== */
+.profession-pills {
+  display: flex;
+  gap: 0.6rem;
+  width: 100%;
+  margin-top: 0.4rem;
+}
+
+.profession-pill {
+  flex: 1;
+  padding: 0.75rem 0.6rem;
+  font-family: var(--font-tech);
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  background: rgba(30, 41, 59, 0.6);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.profession-pill:hover {
+  background: rgba(51, 65, 85, 0.8);
+  color: #ffffff;
+}
+
+.profession-pill.active[data-role="student"] {
+  background: rgba(6, 182, 212, 0.2);
+  border-color: #06b6d4;
+  color: #06b6d4;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
+}
+
+.profession-pill.active[data-role="teacher"] {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+
+.profession-pill.active[data-role="admin"] {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: #f59e0b;
+  color: #f59e0b;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+}
 .portal-hub-container {
   width: 100%;
   max-width: 960px;
