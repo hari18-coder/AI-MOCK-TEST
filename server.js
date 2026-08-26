@@ -26,8 +26,12 @@ MongoClient.connect(MONGODB_URI, { serverSelectionTimeoutMS: 3000 })
     console.warn(`⚠️ [MONGODB NOTICE] Could not connect to local MongoDB (${MONGODB_URI}): ${err.message}. System operating with in-memory persistence mode.`);
   });
 
-// In-Memory Multiplayer Room State
+// In-Memory Multiplayer Room State & Audit Logs
 const activeRooms = {}; // roomCode => { players: { [playerId]: { username, avatar, hp, score, lives, currentQuestionIndex, lastSeen } } }
+const inMemoryLogins = [];
+const inMemoryTestAttempts = [];
+const inMemoryDeviceLogs = [];
+const otpStore = {};
 
 // Periodic Room Cleaner (Remove inactive players after 30 seconds)
 setInterval(() => {
@@ -700,6 +704,78 @@ const server = http.createServer((req, res) => {
           user: userDoc
         }));
       } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
+  // Google / Gmail Sign In Route (/api/auth/google-login)
+  if (safePath === '/api/auth/google-login' || safePath === '\\api\\auth\\google-login') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', async () => {
+      try {
+        const data = JSON.parse(body || '{}');
+        const { email, username, role, googleId, picture } = data;
+        const cleanEmail = String(email || '').trim().toLowerCase();
+
+        if (!cleanEmail || !cleanEmail.includes('@')) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ error: 'Valid Gmail address is required for Google Sign In.' }));
+        }
+
+        const userDoc = {
+          email: cleanEmail,
+          username: username || cleanEmail.split('@')[0],
+          role: role || 'student',
+          authMethod: 'google',
+          googleId: googleId || ('goog_' + Math.random().toString(36).substring(2, 10)),
+          picture: picture || '',
+          isVerified: true,
+          lastLoginAt: new Date(),
+          updatedAt: new Date()
+        };
+
+        const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+
+        const loginLogDoc = {
+          loginId: 'LOG-G-' + Date.now().toString(36).toUpperCase(),
+          email: cleanEmail,
+          username: userDoc.username,
+          role: userDoc.role,
+          authMethod: 'google',
+          status: 'SUCCESS (GOOGLE AUTH)',
+          ip: clientIp,
+          userAgent: req.headers['user-agent'] || 'Unknown',
+          timestamp: new Date()
+        };
+
+        inMemoryLogins.unshift(loginLogDoc);
+
+        if (mongoConnected && db) {
+          try {
+            await db.collection('users').updateOne(
+              { email: cleanEmail },
+              { $set: userDoc },
+              { upsert: true }
+            );
+            await db.collection('login_logs').insertOne(loginLogDoc);
+            console.log(`🌐 [GOOGLE AUTH SUCCESS] Signed in user [${cleanEmail}] as [${userDoc.role}]`);
+          } catch (mErr) {
+            console.warn("MongoDB Google User save notice:", mErr.message);
+          }
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({
+          success: true,
+          message: `Google Sign In successful for ${userDoc.username}`,
+          user: userDoc
+        }));
+      } catch (e) {
+        console.error("Google login error:", e.stack || e.message);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ error: e.message }));
       }

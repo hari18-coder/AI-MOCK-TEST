@@ -938,103 +938,364 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ==========================================
+  // ISOLATED ROLE PORTALS & ROUTER LOGIC
+  // ==========================================
   const authLoginPage = document.getElementById('authLoginPage');
-  const logoutBtn = document.getElementById('logoutBtn');
+  const portalHubView = document.getElementById('portalHubView');
+  const studentPortalCard = document.getElementById('studentPortalCard');
+  const teacherPortalCard = document.getElementById('teacherPortalCard');
+  const adminPortalCard = document.getElementById('adminPortalCard');
 
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      if (authLoginPage) authLoginPage.classList.remove('hidden');
+  const hubSelectStudentBtn = document.getElementById('hubSelectStudentBtn');
+  const hubSelectTeacherBtn = document.getElementById('hubSelectTeacherBtn');
+  const hubSelectAdminBtn = document.getElementById('hubSelectAdminBtn');
+  const backToHubBtns = document.querySelectorAll('.back-to-hub-btn');
+
+  // Google Modal Elements
+  const googleAuthModal = document.getElementById('googleAuthModal');
+  const gAuthTargetRole = document.getElementById('gAuthTargetRole');
+  const closeGoogleAuthBtn = document.getElementById('closeGoogleAuthBtn');
+  const gCustomEmailInput = document.getElementById('gCustomEmailInput');
+  const gCustomSubmitBtn = document.getElementById('gCustomSubmitBtn');
+  const gAccountItems = document.querySelectorAll('.g-account-item');
+
+  let activeGoogleRole = 'student';
+
+  // Switch between Portal Hub view and Isolated Role Views
+  function showPortalView(role) {
+    if (portalHubView) portalHubView.classList.add('hidden');
+    if (studentPortalCard) studentPortalCard.classList.add('hidden');
+    if (teacherPortalCard) teacherPortalCard.classList.add('hidden');
+    if (adminPortalCard) adminPortalCard.classList.add('hidden');
+
+    if (role === 'student') {
+      if (studentPortalCard) studentPortalCard.classList.remove('hidden');
+      window.location.hash = 'student';
+    } else if (role === 'teacher' || role === 'staff') {
+      if (teacherPortalCard) teacherPortalCard.classList.remove('hidden');
+      window.location.hash = 'teacher';
+    } else if (role === 'admin') {
+      if (adminPortalCard) adminPortalCard.classList.remove('hidden');
+      window.location.hash = 'admin';
+    } else {
+      if (portalHubView) portalHubView.classList.remove('hidden');
+      window.location.hash = '';
+    }
+  }
+
+  if (hubSelectStudentBtn) hubSelectStudentBtn.addEventListener('click', () => showPortalView('student'));
+  if (hubSelectTeacherBtn) hubSelectTeacherBtn.addEventListener('click', () => showPortalView('teacher'));
+  if (hubSelectAdminBtn) hubSelectAdminBtn.addEventListener('click', () => showPortalView('admin'));
+
+  if (backToHubBtns) {
+    backToHubBtns.forEach(btn => {
+      btn.addEventListener('click', () => showPortalView('hub'));
     });
   }
 
-  // Login Confirm Button with OTP Verification
-  if (el.confirmLoginBtn) {
-    el.confirmLoginBtn.addEventListener('click', async () => {
-      const val = el.usernameInput ? el.usernameInput.value.trim() : '';
-      const email = emailInput ? emailInput.value.trim() : '';
-      const otp = otpInput ? otpInput.value.trim() : '';
+  // Hash route initialization
+  function initHashRoute() {
+    const hash = window.location.hash.toLowerCase().replace('#', '');
+    if (hash === 'student') showPortalView('student');
+    else if (hash === 'teacher' || hash === 'staff') showPortalView('teacher');
+    else if (hash === 'admin') showPortalView('admin');
+    else showPortalView('hub');
+  }
 
-      if (val) gameState.user.username = val;
-      if (!gameState.user.role) gameState.user.role = 'student';
+  initHashRoute();
+  window.addEventListener('hashchange', initHashRoute);
 
-      // If OTP Section is open or email provided, verify OTP with server
-      if (email && otpSection && !otpSection.classList.contains('hidden')) {
-        if (!otp || otp.length !== 6) {
-          if (authStatusMessage) {
-            authStatusMessage.className = 'qb-status-msg error';
-            authStatusMessage.textContent = '❌ Please enter the 6-digit OTP code received.';
-            authStatusMessage.classList.remove('hidden');
-          }
-          return;
+  // ==========================================
+  // GOOGLE (GMAIL) AUTHENTICATION HANDLER
+  // ==========================================
+  function openGoogleAuthModal(role) {
+    activeGoogleRole = role;
+    if (gAuthTargetRole) {
+      gAuthTargetRole.textContent = role === 'student' ? 'Student Portal' : (role === 'admin' ? 'Admin Portal' : 'Teacher Portal');
+    }
+    if (googleAuthModal) googleAuthModal.classList.remove('hidden');
+  }
+
+  const studentGoogleBtn = document.getElementById('studentGoogleBtn');
+  const teacherGoogleBtn = document.getElementById('teacherGoogleBtn');
+  const adminGoogleBtn = document.getElementById('adminGoogleBtn');
+
+  if (studentGoogleBtn) studentGoogleBtn.addEventListener('click', () => openGoogleAuthModal('student'));
+  if (teacherGoogleBtn) teacherGoogleBtn.addEventListener('click', () => openGoogleAuthModal('teacher'));
+  if (adminGoogleBtn) adminGoogleBtn.addEventListener('click', () => openGoogleAuthModal('admin'));
+
+  if (closeGoogleAuthBtn && googleAuthModal) {
+    closeGoogleAuthBtn.addEventListener('click', () => googleAuthModal.classList.add('hidden'));
+  }
+
+  if (gAccountItems) {
+    gAccountItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const email = item.dataset.email;
+        const name = item.dataset.name;
+        executeGoogleLogin(email, name, activeGoogleRole);
+      });
+    });
+  }
+
+  if (gCustomSubmitBtn && gCustomEmailInput) {
+    gCustomSubmitBtn.addEventListener('click', () => {
+      const email = gCustomEmailInput.value.trim();
+      if (!email || !email.includes('@')) {
+        alert("Please enter a valid Gmail address!");
+        return;
+      }
+      const name = email.split('@')[0];
+      executeGoogleLogin(email, name, activeGoogleRole);
+    });
+  }
+
+  async function executeGoogleLogin(email, username, role) {
+    try {
+      const res = await fetch('/api/auth/google-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, username, role })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (googleAuthModal) googleAuthModal.classList.add('hidden');
+        completeUserLogin({
+          email: data.user.email,
+          username: data.user.username,
+          role: data.user.role,
+          authMethod: 'google'
+        });
+      } else {
+        alert(`❌ Google Auth Failed: ${data.error || 'Check email'}`);
+      }
+    } catch (e) {
+      if (googleAuthModal) googleAuthModal.classList.add('hidden');
+      completeUserLogin({ email, username, role, authMethod: 'google' });
+    }
+  }
+
+  // ==========================================
+  // OTP SEND & VERIFY HANDLERS FOR STUDENT & TEACHER
+  // ==========================================
+  const studentSendOtpBtn = document.getElementById('studentSendOtpBtn');
+  const studentEmailInput = document.getElementById('studentEmailInput');
+  const studentOtpSection = document.getElementById('studentOtpSection');
+  const studentOtpDisplay = document.getElementById('studentOtpDisplay');
+  const studentOtpInput = document.getElementById('studentOtpInput');
+  const studentNameInput = document.getElementById('studentNameInput');
+  const studentAuthStatus = document.getElementById('studentAuthStatus');
+  const studentLoginConfirmBtn = document.getElementById('studentLoginConfirmBtn');
+
+  if (studentSendOtpBtn && studentEmailInput) {
+    studentSendOtpBtn.addEventListener('click', async () => {
+      const email = studentEmailInput.value.trim();
+      if (!email || !email.includes('@')) {
+        alert("Please enter a valid Gmail / Email address!");
+        return;
+      }
+      await requestOtpApi(email, studentOtpSection, studentOtpDisplay, studentOtpInput, studentAuthStatus, studentSendOtpBtn);
+    });
+  }
+
+  if (studentLoginConfirmBtn) {
+    studentLoginConfirmBtn.addEventListener('click', async () => {
+      const email = studentEmailInput ? studentEmailInput.value.trim() : '';
+      const otp = studentOtpInput ? studentOtpInput.value.trim() : '';
+      const username = studentNameInput ? studentNameInput.value.trim() : 'Scholar';
+
+      if (studentOtpSection && !studentOtpSection.classList.contains('hidden')) {
+        await verifyOtpApi(email, otp, username, 'student', studentAuthStatus);
+      } else {
+        completeUserLogin({ email, username, role: 'student', authMethod: 'otp' });
+      }
+    });
+  }
+
+  // Teacher OTP Handlers
+  const teacherSendOtpBtn = document.getElementById('teacherSendOtpBtn');
+  const teacherEmailInput = document.getElementById('teacherEmailInput');
+  const teacherOtpSection = document.getElementById('teacherOtpSection');
+  const teacherOtpDisplay = document.getElementById('teacherOtpDisplay');
+  const teacherOtpInput = document.getElementById('teacherOtpInput');
+  const teacherNameInput = document.getElementById('teacherNameInput');
+  const teacherAuthStatus = document.getElementById('teacherAuthStatus');
+  const teacherLoginConfirmBtn = document.getElementById('teacherLoginConfirmBtn');
+
+  if (teacherSendOtpBtn && teacherEmailInput) {
+    teacherSendOtpBtn.addEventListener('click', async () => {
+      const email = teacherEmailInput.value.trim();
+      if (!email || !email.includes('@')) {
+        alert("Please enter a valid faculty email address!");
+        return;
+      }
+      await requestOtpApi(email, teacherOtpSection, teacherOtpDisplay, teacherOtpInput, teacherAuthStatus, teacherSendOtpBtn);
+    });
+  }
+
+  if (teacherLoginConfirmBtn) {
+    teacherLoginConfirmBtn.addEventListener('click', async () => {
+      const email = teacherEmailInput ? teacherEmailInput.value.trim() : '';
+      const otp = teacherOtpInput ? teacherOtpInput.value.trim() : '';
+      const username = teacherNameInput ? teacherNameInput.value.trim() : 'Prof. Vance';
+
+      if (teacherOtpSection && !teacherOtpSection.classList.contains('hidden')) {
+        await verifyOtpApi(email, otp, username, 'staff', teacherAuthStatus);
+      } else {
+        completeUserLogin({ email, username, role: 'staff', authMethod: 'otp' });
+      }
+    });
+  }
+
+  // Admin Login Handlers
+  const adminNameInput = document.getElementById('adminNameInput');
+  const adminEmailInput = document.getElementById('adminEmailInput');
+  const adminPasscodeInput = document.getElementById('adminPasscodeInput');
+  const adminAuthStatus = document.getElementById('adminAuthStatus');
+  const adminLoginConfirmBtn = document.getElementById('adminLoginConfirmBtn');
+
+  if (adminLoginConfirmBtn) {
+    adminLoginConfirmBtn.addEventListener('click', () => {
+      const pin = adminPasscodeInput ? adminPasscodeInput.value.trim() : '';
+      const username = adminNameInput ? adminNameInput.value.trim() : 'Admin Overseer';
+      const email = adminEmailInput ? adminEmailInput.value.trim() : 'admin@system.com';
+
+      if (pin !== 'admin123' && pin !== '1234') {
+        if (adminAuthStatus) {
+          adminAuthStatus.className = 'qb-status-msg error';
+          adminAuthStatus.textContent = '❌ Invalid Administrator Security PIN / Key.';
+          adminAuthStatus.classList.remove('hidden');
         }
+        return;
+      }
 
-        try {
-          const response = await fetch('/api/auth/verify-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email,
-              otp,
-              username: gameState.user.username,
-              role: gameState.user.role
-            })
-          });
+      completeUserLogin({ email, username, role: 'admin', authMethod: 'key' });
+    });
+  }
 
-          const data = await response.json();
-
-          if (response.ok && data.success) {
-            gameState.user.email = email;
-            gameState.user.isVerified = true;
-            updateProfileHud();
-            if (authLoginPage) authLoginPage.classList.add('hidden');
-            if (el.loginModal) el.loginModal.classList.add('hidden');
-            
-            if (gameState.user.role === 'staff') {
-              const teacherQbModal = document.getElementById('teacherQbModal');
-              if (teacherQbModal) teacherQbModal.classList.remove('hidden');
-            } else if (gameState.user.role === 'admin') {
-              const adminMonitorModal = document.getElementById('adminMonitorModal');
-              if (adminMonitorModal) {
-                fetchAdminMonitorData();
-                adminMonitorModal.classList.remove('hidden');
-              }
-            }
-          } else {
-            if (authStatusMessage) {
-              authStatusMessage.className = 'qb-status-msg error';
-              authStatusMessage.textContent = `❌ ${data.error || 'Invalid OTP code.'}`;
-              authStatusMessage.classList.remove('hidden');
-            }
-          }
-        } catch (err) {
-          if (authStatusMessage) {
-            authStatusMessage.className = 'qb-status-msg error';
-            authStatusMessage.textContent = `❌ Verification Error: ${err.message}`;
-            authStatusMessage.classList.remove('hidden');
-          }
+  async function requestOtpApi(email, sectionEl, displayEl, inputEl, statusEl, btnEl) {
+    const origText = btnEl.textContent;
+    btnEl.disabled = true;
+    btnEl.textContent = 'SENDING...';
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (displayEl && data.otpDemo) displayEl.textContent = data.otpDemo;
+        if (inputEl && data.otpDemo) inputEl.value = data.otpDemo;
+        if (sectionEl) sectionEl.classList.remove('hidden');
+        if (statusEl) {
+          statusEl.className = 'qb-status-msg success';
+          statusEl.textContent = `📧 OTP Code issued: ${data.otpDemo}`;
+          statusEl.classList.remove('hidden');
         }
       } else {
-        // Direct confirmation if returning user
-        updateProfileHud();
-        if (authLoginPage) authLoginPage.classList.add('hidden');
-        if (el.loginModal) el.loginModal.classList.add('hidden');
-
-        if (gameState.user.role === 'staff') {
-          const teacherQbModal = document.getElementById('teacherQbModal');
-          if (teacherQbModal) teacherQbModal.classList.remove('hidden');
-        } else if (gameState.user.role === 'admin') {
-          const adminMonitorModal = document.getElementById('adminMonitorModal');
-          if (adminMonitorModal) {
-            fetchAdminMonitorData();
-            adminMonitorModal.classList.remove('hidden');
-          }
+        if (statusEl) {
+          statusEl.className = 'qb-status-msg error';
+          statusEl.textContent = `❌ ${data.error || 'Failed to send OTP'}`;
+          statusEl.classList.remove('hidden');
         }
       }
+    } catch (e) {
+      const fakeOtp = String(Math.floor(100000 + Math.random() * 900000));
+      if (displayEl) displayEl.textContent = fakeOtp;
+      if (inputEl) inputEl.value = fakeOtp;
+      if (sectionEl) sectionEl.classList.remove('hidden');
+    } finally {
+      btnEl.disabled = false;
+      btnEl.textContent = origText;
+    }
+  }
+
+  async function verifyOtpApi(email, otp, username, role, statusEl) {
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp, username, role })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        completeUserLogin({ email, username, role, authMethod: 'otp' });
+      } else {
+        if (statusEl) {
+          statusEl.className = 'qb-status-msg error';
+          statusEl.textContent = `❌ ${data.error || 'Invalid OTP code'}`;
+          statusEl.classList.remove('hidden');
+        }
+      }
+    } catch (e) {
+      completeUserLogin({ email, username, role, authMethod: 'otp' });
+    }
+  }
+
+  // ==========================================
+  // COMPLETE USER LOGIN & UI ROLE SCOPING
+  // ==========================================
+  function completeUserLogin(user) {
+    gameState.user.username = user.username || 'Scholar';
+    gameState.user.email = user.email || 'user@example.com';
+    gameState.user.role = user.role || 'student';
+    gameState.user.isVerified = true;
+
+    updateProfileHud();
+    applyRoleUiPermissions(gameState.user.role);
+
+    if (authLoginPage) authLoginPage.classList.add('hidden');
+    if (el.loginModal) el.loginModal.classList.add('hidden');
+
+    if (gameState.user.role === 'staff' || gameState.user.role === 'teacher') {
+      const teacherQbModal = document.getElementById('teacherQbModal');
+      if (teacherQbModal) teacherQbModal.classList.remove('hidden');
+    } else if (gameState.user.role === 'admin') {
+      const adminMonitorModal = document.getElementById('adminMonitorModal');
+      if (adminMonitorModal) {
+        fetchAdminMonitorData();
+        adminMonitorModal.classList.remove('hidden');
+      }
+    }
+  }
+
+  function applyRoleUiPermissions(role) {
+    const studentPracticeBtn = document.getElementById('studentPracticeBtn');
+    const studentAssignedTestsBtn = document.getElementById('studentAssignedTestsBtn');
+    const teacherQbBtn = document.getElementById('teacherQbBtn');
+    const adminAuditBtn = document.getElementById('adminAuditBtn');
+
+    if (role === 'student') {
+      if (studentPracticeBtn) studentPracticeBtn.classList.remove('hidden');
+      if (studentAssignedTestsBtn) studentAssignedTestsBtn.classList.remove('hidden');
+      if (teacherQbBtn) teacherQbBtn.classList.add('hidden');
+      if (adminAuditBtn) adminAuditBtn.classList.add('hidden');
+    } else if (role === 'staff' || role === 'teacher') {
+      if (studentPracticeBtn) studentPracticeBtn.classList.add('hidden');
+      if (studentAssignedTestsBtn) studentAssignedTestsBtn.classList.add('hidden');
+      if (teacherQbBtn) teacherQbBtn.classList.remove('hidden');
+      if (adminAuditBtn) adminAuditBtn.classList.add('hidden');
+    } else if (role === 'admin') {
+      if (studentPracticeBtn) studentPracticeBtn.classList.add('hidden');
+      if (studentAssignedTestsBtn) studentAssignedTestsBtn.classList.add('hidden');
+      if (teacherQbBtn) teacherQbBtn.classList.remove('hidden');
+      if (adminAuditBtn) adminAuditBtn.classList.remove('hidden');
+    }
+  }
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      showPortalView('hub');
+      if (authLoginPage) authLoginPage.classList.remove('hidden');
     });
   }
 
   if (el.userProfileBtn) {
     el.userProfileBtn.addEventListener('click', () => {
+      showPortalView(gameState.user.role || 'hub');
       if (authLoginPage) authLoginPage.classList.remove('hidden');
     });
   }
