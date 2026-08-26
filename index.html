@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aptitude Evaluation Suite - AI-Powered Professional Assessment Platform</title>
-  <meta name="description" content="Professional online aptitude assessment suite featuring dynamic AI question generation, custom test bank uploads, answer verification, and live candidate evaluation.">
+  <meta name="description"
+    content="Professional online aptitude assessment suite featuring dynamic AI question generation, custom test bank uploads, answer verification, and live candidate evaluation.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700&family=Rajdhani:wght@500;600;700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
+
 <body>
   <!-- DEDICATED FULL-SCREEN LOGIN PAGE WITH DYNAMIC PROFESSION SELECTOR -->
   <div id="authLoginPage" class="login-page-screen">
@@ -22,18 +27,16 @@
       </div>
 
       <div class="login-portal-card isolated-portal">
-        <div id="loginPortalBadge" class="login-card-badge student-badge">🎓 STUDENT EVALUATION & ASSESSMENT PORTAL</div>
+        <div id="loginPortalBadge" class="login-card-badge student-badge">🎓 STUDENT EVALUATION & ASSESSMENT PORTAL
+        </div>
 
         <div class="login-form-body">
-          
+
           <!-- 1. PROFESSION / ROLE SELECTOR (Student, Teacher, Admin) -->
           <div class="form-group">
-            <label for="professionSelect" class="input-label" style="color: var(--accent-cyan-bright); font-weight: 700; letter-spacing: 1px;">SELECT YOUR PROFESSION / ROLE</label>
-            <div class="profession-pills" id="professionPills">
-              <button type="button" class="profession-pill active" data-role="student">🎓 Student</button>
-              <button type="button" class="profession-pill" data-role="teacher">👨‍🏫 Teacher</button>
-              <button type="button" class="profession-pill" data-role="admin">🛡️ Admin</button>
-            </div>
+            <label for="professionSelect" class="input-label"
+              style="color: var(--accent-cyan-bright); font-weight: 700; letter-spacing: 1px;">SELECT YOUR PROFESSION /
+              ROLE</label>
             <select id="professionSelect" class="styled-select width-full hidden">
               <option value="student" selected>🎓 Student</option>
               <option value="teacher">👨‍🏫 Teacher / Faculty</option>
@@ -44,10 +47,14 @@
           <!-- 2. Google / Gmail Single Click Login Button -->
           <button id="googleAuthBtn" class="google-auth-btn">
             <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z"/>
-              <path fill="#FBBC05" d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z"/>
-              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"/>
+              <path fill="#4285F4"
+                d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
+              <path fill="#34A853"
+                d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z" />
+              <path fill="#FBBC05"
+                d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z" />
+              <path fill="#EA4335"
+                d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z" />
             </svg>
             <span id="googleBtnText">SIGN IN / SIGN UP WITH GMAIL (GOOGLE)</span>
           </button>
@@ -64,62 +71,33 @@
           <div class="form-group" id="emailGroup">
             <label for="emailInput" class="input-label" id="emailLabel">GMAIL / EMAIL ADDRESS</label>
             <div style="display: flex; gap: 0.6rem; width: 100%;">
-              <input type="email" id="emailInput" class="text-input" style="flex: 1;" placeholder="candidate@gmail.com" value="scholar@gmail.com">
-              <button id="sendOtpBtn" class="hud-btn highlight-btn" style="white-space: nowrap; padding: 0.75rem 1.2rem;">SEND OTP 📧</button>
+              <input type="email" id="emailInput" class="text-input" style="flex: 1;" placeholder="candidate@gmail.com"
+                value="scholar@gmail.com">
+              <button id="sendOtpBtn" class="hud-btn highlight-btn"
+                style="white-space: nowrap; padding: 0.75rem 1.2rem;">SEND OTP 📧</button>
             </div>
           </div>
 
           <!-- OTP Verification Section -->
-          <div id="otpSection" class="form-group hidden" style="background: rgba(16, 185, 129, 0.12); border: 1px dashed var(--accent-emerald-bright); padding: 1.2rem; border-radius: var(--radius-sm); text-align: center;">
-            <div style="font-family: var(--font-tech); font-weight: 700; font-size: 0.82rem; color: var(--accent-cyan-bright); letter-spacing: 1.5px; margin-bottom: 0.3rem;">📩 VERIFICATION OTP CODE ISSUED</div>
-            <div id="otpDisplayBanner" style="font-family: var(--font-tech); font-weight: 800; font-size: 2.2rem; color: var(--accent-emerald-bright); letter-spacing: 8px; text-shadow: 0 0 16px var(--accent-emerald-glow); margin: 0.2rem 0;">849201</div>
-            <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.8rem;">(Code auto-filled below for instant verification)</div>
-            <input type="text" id="otpInput" class="text-input" maxlength="6" placeholder="ENTER 6-DIGIT OTP" style="letter-spacing: 6px; font-weight: 800; text-align: center; font-size: 1.3rem; color: var(--accent-emerald-bright);">
-          </div>
-
-          <!-- Student Evaluation Track Box -->
-          <div id="studentTrackBox" class="avatar-selection-box">
-            <span class="input-label">SELECT EVALUATION TRACK</span>
-            <div class="avatar-grid">
-              <div class="avatar-card selected" data-avatar="🎓" data-name="Quantitative Scholar">
-                <span class="avatar-emoji">🎓</span>
-                <span class="avatar-title">Quantitative Analyst</span>
-              </div>
-              <div class="avatar-card" data-avatar="⚔️" data-name="Logic Strategist">
-                <span class="avatar-emoji">⚔️</span>
-                <span class="avatar-title">Logic Strategist</span>
-              </div>
-              <div class="avatar-card" data-avatar="🚀" data-name="Data Specialist">
-                <span class="avatar-emoji">🚀</span>
-                <span class="avatar-title">Data Specialist</span>
-              </div>
-              <div class="avatar-card" data-avatar="🧙" data-name="Mathematical Master">
-                <span class="avatar-emoji">🧙</span>
-                <span class="avatar-title">Math Master</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Teacher Subject / Department Selector Box -->
-          <div id="teacherDeptBox" class="form-group hidden">
-            <label for="teacherDeptSelect" class="input-label">DEPARTMENT / FACULTY SUBJECT</label>
-            <select id="teacherDeptSelect" class="styled-select width-full">
-              <option value="Quantitative Reasoning">Quantitative Aptitude & Mathematics</option>
-              <option value="Logical Reasoning">Logical Reasoning & Analytics</option>
-              <option value="Data Interpretation">Data Analytics & Interpretation</option>
-              <option value="Computer Science">Computer Science & Algorithms</option>
-            </select>
-          </div>
-
-          <!-- Admin Security Passcode Box -->
-          <div id="adminPasscodeBox" class="form-group hidden">
-            <label for="adminPasscodeInput" class="input-label" style="color: var(--accent-cyan-bright);">ADMINISTRATOR SECURITY PIN / KEY</label>
-            <input type="password" id="adminPasscodeInput" class="text-input" placeholder="Enter admin security key (Default: admin123)" value="admin123">
+          <div id="otpSection" class="form-group hidden"
+            style="background: rgba(16, 185, 129, 0.12); border: 1px dashed var(--accent-emerald-bright); padding: 1.2rem; border-radius: var(--radius-sm); text-align: center;">
+            <div
+              style="font-family: var(--font-tech); font-weight: 700; font-size: 0.82rem; color: var(--accent-cyan-bright); letter-spacing: 1.5px; margin-bottom: 0.3rem;">
+              📩 VERIFICATION OTP CODE ISSUED</div>
+            <div id="otpDisplayBanner"
+              style="font-family: var(--font-tech); font-weight: 800; font-size: 2.2rem; color: var(--accent-emerald-bright); letter-spacing: 8px; text-shadow: 0 0 16px var(--accent-emerald-glow); margin: 0.2rem 0;">
+              849201</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.8rem;">(Code auto-filled below
+              for instant verification)</div>
+            <input type="text" id="otpInput" class="text-input" maxlength="6" placeholder="ENTER 6-DIGIT OTP"
+              style="letter-spacing: 6px; font-weight: 800; text-align: center; font-size: 1.3rem; color: var(--accent-emerald-bright);">
           </div>
 
           <div id="authStatusMessage" class="qb-status-msg hidden"></div>
 
-          <button id="confirmLoginBtn" class="modal-primary-btn" style="font-size: 1.05rem; padding: 0.95rem; margin-top: 0.5rem; background: linear-gradient(135deg, #06b6d4, #10b981);">VERIFY & ENTER PORTAL ▶</button>
+          <button id="confirmLoginBtn" class="modal-primary-btn"
+            style="font-size: 1.05rem; padding: 0.95rem; margin-top: 0.5rem; background: linear-gradient(135deg, #06b6d4, #10b981);">VERIFY
+            & ENTER PORTAL ▶</button>
         </div>
       </div>
 
@@ -133,30 +111,26 @@
     </div>
   </div>
 
-      <div class="login-footer-info">
-        <span>🔒 256-Bit Encrypted Role Access</span>
-        <span>•</span>
-        <span>🌐 Google Gmail Single Sign-On</span>
-        <span>•</span>
-        <span>⚡ AI Proctoring Suite</span>
-      </div>
-    </div>
-  </div>
-
   <!-- INTERACTIVE GOOGLE (GMAIL) AUTHENTICATION MODAL -->
   <div id="googleAuthModal" class="modal-overlay hidden">
     <div class="modal-card google-modal-card">
       <div class="google-modal-header">
         <svg width="24" height="24" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z"/>
-          <path fill="#FBBC05" d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z"/>
-          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"/>
+          <path fill="#4285F4"
+            d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
+          <path fill="#34A853"
+            d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z" />
+          <path fill="#FBBC05"
+            d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z" />
+          <path fill="#EA4335"
+            d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z" />
         </svg>
         <span style="font-weight: 700; font-size: 1.1rem; color: #1e293b;">Sign in with Google</span>
       </div>
 
-      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1.2rem;">Choose your Google account to proceed to <strong id="gAuthTargetRole">Student Portal</strong>:</p>
+      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1.2rem;">Choose your Google account to proceed to
+        <strong id="gAuthTargetRole">Student Portal</strong>:
+      </p>
 
       <div class="google-accounts-list">
         <!-- Quick Account Picker 1 -->
@@ -182,10 +156,14 @@
 
       <!-- Custom Gmail Input -->
       <div style="margin-top: 1rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
-        <label style="font-size: 0.75rem; font-weight: 700; color: #475569; display: block; margin-bottom: 0.4rem;">OR ENTER ANY GMAIL ADDRESS</label>
+        <label style="font-size: 0.75rem; font-weight: 700; color: #475569; display: block; margin-bottom: 0.4rem;">OR
+          ENTER ANY GMAIL ADDRESS</label>
         <div style="display: flex; gap: 0.5rem;">
-          <input type="email" id="gCustomEmailInput" class="text-input" style="flex: 1; background: #f8fafc; color: #0f172a; border-color: #cbd5e1;" placeholder="your.name@gmail.com">
-          <button id="gCustomSubmitBtn" class="hud-btn highlight-btn" style="white-space: nowrap; background: #2563eb; color: #ffffff;">Sign In ▶</button>
+          <input type="email" id="gCustomEmailInput" class="text-input"
+            style="flex: 1; background: #f8fafc; color: #0f172a; border-color: #cbd5e1;"
+            placeholder="your.name@gmail.com">
+          <button id="gCustomSubmitBtn" class="hud-btn highlight-btn"
+            style="white-space: nowrap; background: #2563eb; color: #ffffff;">Sign In ▶</button>
         </div>
       </div>
 
@@ -195,17 +173,17 @@
     </div>
   </div>
 
-      <div class="login-footer-info">
-        <span>🔒 256-Bit Encrypted Access</span>
-        <span>•</span>
-        <span>⚡ AI-Powered Real-Time Evaluation</span>
-      </div>
-    </div>
+  <div class="login-footer-info">
+    <span>🔒 256-Bit Encrypted Access</span>
+    <span>•</span>
+    <span>⚡ AI-Powered Real-Time Evaluation</span>
+  </div>
+  </div>
   </div>
 
   <!-- Main Application Container -->
   <div class="game-wrapper">
-    
+
     <!-- Professional Header Navbar -->
     <header class="hud-header">
       <div class="hud-brand">
@@ -246,7 +224,9 @@
           ⚡ AI SELF PRACTICE
         </button>
 
-        <button id="studentAssignedTestsBtn" class="hud-btn highlight-btn" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); color: var(--accent-emerald-bright);" title="View & Start Protected Tests Assigned by Teachers">
+        <button id="studentAssignedTestsBtn" class="hud-btn highlight-btn"
+          style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); color: var(--accent-emerald-bright);"
+          title="View & Start Protected Tests Assigned by Teachers">
           📋 ASSIGNED TESTS
         </button>
 
@@ -262,7 +242,9 @@
           INVITE CANDIDATE
         </button>
 
-        <button id="logoutBtn" class="hud-btn" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #ef4444;" title="Logout to Login Page">
+        <button id="logoutBtn" class="hud-btn"
+          style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #ef4444;"
+          title="Logout to Login Page">
           🔒 LOGOUT
         </button>
       </div>
@@ -273,7 +255,7 @@
 
       <!-- Left Side: Test Navigation & Analytics Panel -->
       <section class="canvas-section">
-        
+
 
 
         <!-- Hidden canvas element for API compatibility -->
@@ -288,7 +270,7 @@
             <span class="section-label">ASSESSMENT PALETTE</span>
             <span class="palette-sub">Click question to view</span>
           </div>
-          
+
           <div id="questionPaletteGrid" class="question-palette-grid">
             <button class="palette-pill active">Q1</button>
             <button class="palette-pill">Q2</button>
@@ -301,14 +283,17 @@
         <div class="arena-footer">
           <span id="topicTag" class="topic-tag">QUANTITATIVE REASONING</span>
           <span id="qbActiveTag" class="qb-active-tag hidden">CUSTOM TEST BANK LOADED</span>
-          <span class="tip-text">Shortcuts: <span>[1]</span> <span>[2]</span> <span>[3]</span> <span>[4]</span> to select answer</span>
+          <span class="tip-text">Shortcuts: <span>[1]</span> <span>[2]</span> <span>[3]</span> <span>[4]</span> to
+            select answer</span>
         </div>
-        <div id="roomOpponentStatus" class="qb-active-tag hidden" style="width: 100%; text-align: center; font-size: 0.85rem; padding: 0.4rem; background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.3); color: #c084fc;"></div>
+        <div id="roomOpponentStatus" class="qb-active-tag hidden"
+          style="width: 100%; text-align: center; font-size: 0.85rem; padding: 0.4rem; background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.3); color: #c084fc;">
+        </div>
       </section>
 
       <!-- Right Side: Interactive Question Panel -->
       <section class="question-section">
-        
+
         <!-- Challenge Header & Dynamic Timer -->
         <div class="challenge-header">
           <div class="difficulty-container">
@@ -330,7 +315,8 @@
 
         <!-- Question Box -->
         <div class="question-card">
-          <div class="question-number-badge">QUESTION <span id="qCurrentNum">1</span> OF <span id="qTotalNum">5</span></div>
+          <div class="question-number-badge">QUESTION <span id="qCurrentNum">1</span> OF <span id="qTotalNum">5</span>
+          </div>
           <h2 id="questionText" class="question-text">Loading aptitude evaluation challenge...</h2>
         </div>
 
@@ -369,10 +355,12 @@
         <div id="practiceAnswerBox" class="practice-answer-box hidden">
           <div class="practice-ans-header">
             <span>💡 AI GENERATED SOLUTION & PRACTICE ANSWER</span>
-            <button id="toggleAnswerVisibilityBtn" class="link-btn" style="font-size: 0.8rem; color: var(--accent-emerald-bright);">👁️ HIDE ANSWER</button>
+            <button id="toggleAnswerVisibilityBtn" class="link-btn"
+              style="font-size: 0.8rem; color: var(--accent-emerald-bright);">👁️ HIDE ANSWER</button>
           </div>
           <div id="practiceAnswerText" class="practice-ans-text">Option A: 12.5 m/s</div>
-          <div id="practiceExplanationText" class="practice-explanation">To convert km/hr to m/s, multiply by 5/18. So 45 * 5/18 = 12.5 m/s.</div>
+          <div id="practiceExplanationText" class="practice-explanation">To convert km/hr to m/s, multiply by 5/18. So
+            45 * 5/18 = 12.5 m/s.</div>
         </div>
 
         <!-- Protected Test Anti-Cheat Tab Switch Live Banner -->
@@ -380,7 +368,9 @@
           <span style="font-size: 1.2rem;">🔒</span>
           <div>
             <div>PROTECTED TEST ENVIRONMENT ACTIVE — NO COPYING & NO TAB SWITCHING</div>
-            <div style="font-size: 0.78rem; opacity: 0.9;">Tab Switches: <span id="liveTabSwitchCount" style="color: #ffffff; font-weight: 800;">0</span> / 2 Allowed (<span style="color: #fca5a5;">2nd switch triggers immediate termination</span>)</div>
+            <div style="font-size: 0.78rem; opacity: 0.9;">Tab Switches: <span id="liveTabSwitchCount"
+                style="color: #ffffff; font-weight: 800;">0</span> / 2 Allowed (<span style="color: #fca5a5;">2nd switch
+                triggers immediate termination</span>)</div>
           </div>
         </div>
 
@@ -423,15 +413,19 @@
       <div class="form-group">
         <label for="emailInput" class="input-label">EMAIL ADDRESS (FIRST SIGNUP VERIFICATION)</label>
         <div style="display: flex; gap: 0.5rem; width: 100%;">
-          <input type="email" id="emailInput" class="text-input" style="flex: 1;" placeholder="candidate@example.com" value="scholar@example.com">
+          <input type="email" id="emailInput" class="text-input" style="flex: 1;" placeholder="candidate@example.com"
+            value="scholar@example.com">
           <button id="sendOtpBtn" class="hud-btn highlight-btn" style="white-space: nowrap;">SEND OTP 📧</button>
         </div>
       </div>
 
       <!-- OTP Verification Input Section -->
-      <div id="otpSection" class="form-group hidden" style="background: var(--bg-card); border: 1px solid var(--accent-cyan-border); padding: 0.9rem; border-radius: var(--radius-sm);">
-        <label for="otpInput" class="input-label" style="color: var(--accent-emerald-bright);">ENTER 6-DIGIT VERIFICATION OTP</label>
-        <input type="text" id="otpInput" class="text-input" maxlength="6" placeholder="e.g. 849201" style="letter-spacing: 4px; font-weight: 700; text-align: center; font-size: 1.2rem;">
+      <div id="otpSection" class="form-group hidden"
+        style="background: var(--bg-card); border: 1px solid var(--accent-cyan-border); padding: 0.9rem; border-radius: var(--radius-sm);">
+        <label for="otpInput" class="input-label" style="color: var(--accent-emerald-bright);">ENTER 6-DIGIT
+          VERIFICATION OTP</label>
+        <input type="text" id="otpInput" class="text-input" maxlength="6" placeholder="e.g. 849201"
+          style="letter-spacing: 4px; font-weight: 700; text-align: center; font-size: 1.2rem;">
       </div>
 
       <div id="authStatusMessage" class="qb-status-msg hidden"></div>
@@ -547,10 +541,13 @@
       </div>
 
       <!-- Active Custom QB Warning & Override Toggle -->
-      <div id="qbActiveNotice" class="qb-notice-box hidden" style="margin-top: 15px; padding: 10px; background: rgba(255, 170, 0, 0.15); border: 1px solid #ffaa00; border-radius: 8px; font-size: 0.9rem; text-align: center;">
+      <div id="qbActiveNotice" class="qb-notice-box hidden"
+        style="margin-top: 15px; padding: 10px; background: rgba(255, 170, 0, 0.15); border: 1px solid #ffaa00; border-radius: 8px; font-size: 0.9rem; text-align: center;">
         <span id="qbActiveNoticeText">📁 Custom Test Bank is active. Matches will use your uploaded questions.</span>
         <div style="margin-top: 6px;">
-          <button id="useProceduralAiBtn" class="link-btn highlight" style="font-weight: bold; cursor: pointer; text-decoration: underline;">Switch to Pure AI Question Generator ⚡</button>
+          <button id="useProceduralAiBtn" class="link-btn highlight"
+            style="font-weight: bold; cursor: pointer; text-decoration: underline;">Switch to Pure AI Question Generator
+            ⚡</button>
         </div>
       </div>
 
@@ -609,7 +606,8 @@
     <div class="modal-card config-card">
       <div class="modal-header-icon">🤖</div>
       <h2>AI & LLM MODEL CONFIG</h2>
-      <p class="modal-subtitle">Optionally connect external LLM API models (Google Gemini API / OpenAI) for live question generation.</p>
+      <p class="modal-subtitle">Optionally connect external LLM API models (Google Gemini API / OpenAI) for live
+        question generation.</p>
 
       <div class="form-group">
         <label class="topic-checkbox-card">
@@ -632,7 +630,8 @@
 
       <div class="form-group">
         <label for="llmApiKeyInput" class="input-label" id="llmApiKeyLabel">API KEY</label>
-        <input type="password" id="llmApiKeyInput" class="text-input" placeholder="Paste Google Gemini or OpenAI API key here...">
+        <input type="password" id="llmApiKeyInput" class="text-input"
+          placeholder="Paste Google Gemini or OpenAI API key here...">
       </div>
 
       <div id="aiApiStatusMessage" class="qb-status-msg hidden"></div>
@@ -651,8 +650,9 @@
     <div class="modal-card friends-card">
       <div class="modal-header-icon">📱</div>
       <h2>INVITE CANDIDATE</h2>
-      <p class="modal-subtitle">Share room link or scan QR code to evaluate candidates on the exact same question set!</p>
-      
+      <p class="modal-subtitle">Share room link or scan QR code to evaluate candidates on the exact same question set!
+      </p>
+
       <div class="room-code-box">
         <span class="room-label">ASSESSMENT ROOM CODE</span>
         <span id="roomCodeDisplay" class="room-code-val">ARENA-8924</span>
@@ -664,7 +664,8 @@
       </div>
 
       <div class="share-link-box">
-        <input type="text" id="shareUrlInput" class="share-url-input" readonly value="http://localhost:8080?room=ARENA-8924">
+        <input type="text" id="shareUrlInput" class="share-url-input" readonly
+          value="http://localhost:8080?room=ARENA-8924">
         <button id="copyShareUrlBtn" class="copy-btn">📋 COPY LINK</button>
       </div>
       <div id="copyFeedback" class="copy-feedback hidden">✓ Assessment link copied to clipboard!</div>
@@ -679,7 +680,7 @@
       <div class="modal-header-icon trophy">📊</div>
       <h2 class="title-gold">ASSESSMENT EVALUATION REPORT</h2>
       <p class="modal-subtitle">You have completed the aptitude assessment suite!</p>
-      
+
       <div class="stats-summary">
         <div class="stat-item">
           <span class="stat-label">TOTAL SCORE</span>
@@ -705,12 +706,15 @@
     <div class="modal-card teacher-qb-card" style="max-width: 780px;">
       <div class="modal-header-icon">👨‍🏫</div>
       <h2>TEACHER QUESTION BANK BUILDER</h2>
-      <p class="modal-subtitle">Import JSON/text question files or manually build questions to publish for candidates.</p>
+      <p class="modal-subtitle">Import JSON/text question files or manually build questions to publish for candidates.
+      </p>
 
       <!-- Option 1: JSON / Text File & Paste Upload -->
-      <div style="width: 100%; text-align: left; background: var(--bg-card); border: 1px solid var(--border-color); padding: 1rem; border-radius: var(--radius-sm); display: flex; flex-direction: column; gap: 0.75rem;">
-        <span class="section-label" style="color: var(--accent-emerald-bright);">METHOD 1: IMPORT FROM JSON / TEXT FILE OR PASTE</span>
-        
+      <div
+        style="width: 100%; text-align: left; background: var(--bg-card); border: 1px solid var(--border-color); padding: 1rem; border-radius: var(--radius-sm); display: flex; flex-direction: column; gap: 0.75rem;">
+        <span class="section-label" style="color: var(--accent-emerald-bright);">METHOD 1: IMPORT FROM JSON / TEXT FILE
+          OR PASTE</span>
+
         <div class="topics-grid" style="grid-template-columns: 1fr 1fr;">
           <div class="form-group">
             <label for="tQbFileInput" class="input-label">CHOOSE JSON / TEXT FILE</label>
@@ -718,19 +722,25 @@
           </div>
           <div class="form-group">
             <label for="tQbPasteTextarea" class="input-label">PASTE RAW JSON / QUESTIONS</label>
-            <textarea id="tQbPasteTextarea" class="code-textarea" rows="2" placeholder='[{"question":"What is 20% of 150?","options":["20","30","40","50"],"answer":"B"}]'></textarea>
+            <textarea id="tQbPasteTextarea" class="code-textarea" rows="2"
+              placeholder='[{"question":"What is 20% of 150?","options":["20","30","40","50"],"answer":"B"}]'></textarea>
           </div>
         </div>
 
-        <button id="tParseJsonBtn" class="modal-secondary-btn highlight" style="align-self: flex-start;">🔍 PARSE & ADD JSON/TEXT QUESTIONS TO TEACHER BANK</button>
+        <button id="tParseJsonBtn" class="modal-secondary-btn highlight" style="align-self: flex-start;">🔍 PARSE & ADD
+          JSON/TEXT QUESTIONS TO TEACHER BANK</button>
       </div>
 
-      <div style="width: 100%; text-align: center; font-weight: 700; color: var(--text-muted); font-size: 0.82rem; margin: 0.2rem 0;">— OR METHOD 2: MANUALLY BUILD SINGLE QUESTION BELOW —</div>
+      <div
+        style="width: 100%; text-align: center; font-weight: 700; color: var(--text-muted); font-size: 0.82rem; margin: 0.2rem 0;">
+        — OR METHOD 2: MANUALLY BUILD SINGLE QUESTION BELOW —</div>
 
-      <div class="teacher-builder-form" style="width: 100%; text-align: left; display: flex; flex-direction: column; gap: 0.9rem;">
+      <div class="teacher-builder-form"
+        style="width: 100%; text-align: left; display: flex; flex-direction: column; gap: 0.9rem;">
         <div class="form-group">
           <label for="tQuestionText" class="input-label">1. QUESTION TEXT</label>
-          <textarea id="tQuestionText" class="code-textarea" rows="2" placeholder="e.g. A worker can complete a task in 12 days. How much work is done in 3 days?"></textarea>
+          <textarea id="tQuestionText" class="code-textarea" rows="2"
+            placeholder="e.g. A worker can complete a task in 12 days. How much work is done in 3 days?"></textarea>
         </div>
 
         <div class="topics-grid" style="grid-template-columns: repeat(2, 1fr);">
@@ -785,17 +795,20 @@
 
         <div class="form-group">
           <label for="tExplanation" class="input-label">DERIVATION & EXPLANATION</label>
-          <textarea id="tExplanation" class="code-textarea" rows="2" placeholder="Step-by-step derivation for candidates..."></textarea>
+          <textarea id="tExplanation" class="code-textarea" rows="2"
+            placeholder="Step-by-step derivation for candidates..."></textarea>
         </div>
 
-        <button id="tAddQuestionBtn" class="modal-primary-btn" style="background: linear-gradient(135deg, #10b981, #059669);">+ ADD QUESTION TO TEACHER BANK</button>
+        <button id="tAddQuestionBtn" class="modal-primary-btn"
+          style="background: linear-gradient(135deg, #10b981, #059669);">+ ADD QUESTION TO TEACHER BANK</button>
       </div>
 
       <!-- Live Preview of Teacher Created Questions -->
       <div class="qb-preview-section" style="margin-top: 0.5rem;">
         <span class="input-label">TEACHER CREATED QUESTIONS (<span id="tQbCount">0</span>):</span>
         <div id="tQbList" class="qb-preview-list" style="max-height: 180px;">
-          <div style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem;">No manual questions added yet. Use form above to add questions.</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem;">No manual
+            questions added yet. Use form above to add questions.</div>
         </div>
       </div>
 
@@ -814,22 +827,26 @@
       <h2>ADMIN LIVE ASSESSMENT MONITOR</h2>
       <p class="modal-subtitle">Real-time candidate evaluation proctoring & status tracking.</p>
 
-      <div class="room-code-box" style="width: 100%; display: flex; justify-content: space-between; align-items: center; flex-direction: row;">
+      <div class="room-code-box"
+        style="width: 100%; display: flex; justify-content: space-between; align-items: center; flex-direction: row;">
         <div>
           <span class="room-label">ACTIVE ROOM CODE</span>
           <span id="adminRoomDisplay" class="room-code-val" style="font-size: 1.4rem;">ARENA-8924</span>
         </div>
         <div style="text-align: right;">
           <span class="room-label">CONNECTED CANDIDATES</span>
-          <span id="adminCandidateCount" class="room-code-val" style="font-size: 1.4rem; color: var(--accent-emerald-bright);">0 Online</span>
+          <span id="adminCandidateCount" class="room-code-val"
+            style="font-size: 1.4rem; color: var(--accent-emerald-bright);">0 Online</span>
         </div>
       </div>
 
       <!-- Candidate Monitoring Live Feed Table -->
-      <div style="width: 100%; max-height: 280px; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.8rem;">
+      <div
+        style="width: 100%; max-height: 280px; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.8rem;">
         <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
           <thead>
-            <tr style="border-bottom: 1px solid var(--border-color); color: var(--accent-cyan-bright); font-family: var(--font-tech); letter-spacing: 1px;">
+            <tr
+              style="border-bottom: 1px solid var(--border-color); color: var(--accent-cyan-bright); font-family: var(--font-tech); letter-spacing: 1px;">
               <th style="padding: 0.5rem;">CANDIDATE</th>
               <th style="padding: 0.5rem;">PROGRESS</th>
               <th style="padding: 0.5rem;">SCORE</th>
@@ -839,7 +856,8 @@
           </thead>
           <tbody id="adminCandidateTableBody">
             <tr>
-              <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No active candidates connected to room ARENA-8924 yet. Share room code with candidates to monitor live.</td>
+              <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No active
+                candidates connected to room ARENA-8924 yet. Share room code with candidates to monitor live.</td>
             </tr>
           </tbody>
         </table>
@@ -858,13 +876,16 @@
     <div class="modal-card admin-monitor-card" style="max-width: 960px;">
       <div class="modal-header-icon">🛡️</div>
       <h2>ADMINISTRATION AUDIT & SECURITY PORTAL</h2>
-      <p class="modal-subtitle">Full access logs, test session details, device specs, and anti-cheat cheating alerts.</p>
+      <p class="modal-subtitle">Full access logs, test session details, device specs, and anti-cheat cheating alerts.
+      </p>
 
       <!-- 3 Audit Navigation Tabs -->
       <div class="audit-tabs-row">
-        <button class="audit-tab-btn active" data-tab="logins">🔑 LOGIN DETAILS LOG (<span id="auditLoginCount">0</span>)</button>
+        <button class="audit-tab-btn active" data-tab="logins">🔑 LOGIN DETAILS LOG (<span
+            id="auditLoginCount">0</span>)</button>
         <button class="audit-tab-btn" data-tab="tests">📋 TEST DETAILS LOG (<span id="auditTestCount">0</span>)</button>
-        <button class="audit-tab-btn" data-tab="devices">💻 DEVICE SPECS & CHEATING ALERTS (<span id="auditDeviceCount">0</span>)</button>
+        <button class="audit-tab-btn" data-tab="devices">💻 DEVICE SPECS & CHEATING ALERTS (<span
+            id="auditDeviceCount">0</span>)</button>
       </div>
 
       <!-- Tab 1: Login Details Table -->
@@ -883,7 +904,10 @@
             </tr>
           </thead>
           <tbody id="auditLoginsTableBody">
-            <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading login details audit log...</td></tr>
+            <tr>
+              <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading login
+                details audit log...</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -905,7 +929,10 @@
             </tr>
           </thead>
           <tbody id="auditTestsTableBody">
-            <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading test details audit log...</td></tr>
+            <tr>
+              <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading test
+                details audit log...</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -926,7 +953,10 @@
             </tr>
           </thead>
           <tbody id="auditDevicesTableBody">
-            <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading candidate device specifications log...</td></tr>
+            <tr>
+              <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading candidate
+                device specifications log...</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -940,34 +970,43 @@
 
   <!-- 11. TAB SWITCH WARNING MODAL (Switch 1/2) -->
   <div id="tabWarningModal" class="modal-overlay hidden">
-    <div class="modal-card" style="max-width: 480px; text-align: center; border: 2px solid #f59e0b; background: rgba(15, 23, 42, 0.95);">
+    <div class="modal-card"
+      style="max-width: 480px; text-align: center; border: 2px solid #f59e0b; background: rgba(15, 23, 42, 0.95);">
       <div class="modal-header-icon" style="font-size: 3rem; margin-bottom: 0.5rem;">⚠️</div>
       <h2 style="color: #fbbf24; font-size: 1.4rem;">WARNING 1 / 2: TAB SWITCHING DETECTED!</h2>
       <p style="color: var(--text-main); font-size: 0.95rem; margin: 1rem 0; line-height: 1.5;">
         You navigated away from the protected test environment!
         <br><strong style="color: #f87171;">Tab switching is strictly forbidden during tests.</strong>
       </p>
-      <div style="background: rgba(245, 158, 11, 0.15); border: 1px dashed #f59e0b; padding: 0.8rem; border-radius: var(--radius-sm); color: #fbbf24; font-family: var(--font-tech); font-weight: 700; font-size: 0.9rem; margin-bottom: 1.2rem;">
+      <div
+        style="background: rgba(245, 158, 11, 0.15); border: 1px dashed #f59e0b; padding: 0.8rem; border-radius: var(--radius-sm); color: #fbbf24; font-family: var(--font-tech); font-weight: 700; font-size: 0.9rem; margin-bottom: 1.2rem;">
         ATTEMPT 1 OF 2 — 1 MORE SWITCH WILL TERMINATE YOUR TEST IMMEDIATELY!
       </div>
-      <button id="resumeTestBtn" class="modal-primary-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);">I UNDERSTAND & RESUME TEST ▶</button>
+      <button id="resumeTestBtn" class="modal-primary-btn"
+        style="background: linear-gradient(135deg, #f59e0b, #d97706);">I UNDERSTAND & RESUME TEST ▶</button>
     </div>
   </div>
 
   <!-- 12. TEST TERMINATED DUE TO CHEATING MODAL (Switch 2/2) -->
   <div id="tabTerminatedModal" class="modal-overlay hidden">
-    <div class="modal-card" style="max-width: 520px; text-align: center; border: 2px solid #ef4444; background: rgba(15, 23, 42, 0.98); box-shadow: 0 0 30px rgba(239, 68, 68, 0.4);">
-      <div class="modal-header-icon" style="font-size: 3.5rem; margin-bottom: 0.5rem; animation: pulseAlert 1.5s infinite;">🚨</div>
+    <div class="modal-card"
+      style="max-width: 520px; text-align: center; border: 2px solid #ef4444; background: rgba(15, 23, 42, 0.98); box-shadow: 0 0 30px rgba(239, 68, 68, 0.4);">
+      <div class="modal-header-icon"
+        style="font-size: 3.5rem; margin-bottom: 0.5rem; animation: pulseAlert 1.5s infinite;">🚨</div>
       <h2 style="color: #f87171; font-size: 1.5rem; letter-spacing: 1px;">TEST TERMINATED FOR CHEATING</h2>
       <p style="color: var(--text-main); font-size: 0.95rem; margin: 1rem 0; line-height: 1.5;">
-        Your test session has been <strong style="color: #ef4444;">TERMINATED IMMEDIATELY</strong> because you exceeded the tab switch limit (<span style="color: #f87171; font-weight: 800;">2 tab switches detected</span>).
+        Your test session has been <strong style="color: #ef4444;">TERMINATED IMMEDIATELY</strong> because you exceeded
+        the tab switch limit (<span style="color: #f87171; font-weight: 800;">2 tab switches detected</span>).
       </p>
-      <div style="background: rgba(239, 68, 68, 0.18); border: 1px solid #ef4444; padding: 1rem; border-radius: var(--radius-sm); text-align: left; margin-bottom: 1.2rem; font-size: 0.85rem; color: #fca5a5;">
+      <div
+        style="background: rgba(239, 68, 68, 0.18); border: 1px solid #ef4444; padding: 1rem; border-radius: var(--radius-sm); text-align: left; margin-bottom: 1.2rem; font-size: 0.85rem; color: #fca5a5;">
         <div><strong>Status:</strong> TERMINATED (Violated Anti-Cheat Policy)</div>
         <div><strong>Reason:</strong> Tab Switch Count >= 2</div>
-        <div><strong>Action:</strong> Event logged to Administrator & Teacher Audit Dashboard with device specifications.</div>
+        <div><strong>Action:</strong> Event logged to Administrator & Teacher Audit Dashboard with device
+          specifications.</div>
       </div>
-      <button id="exitTerminatedModalBtn" class="modal-primary-btn danger" style="background: linear-gradient(135deg, #ef4444, #dc2626);">EXIT TO DASHBOARD 🔒</button>
+      <button id="exitTerminatedModalBtn" class="modal-primary-btn danger"
+        style="background: linear-gradient(135deg, #ef4444, #dc2626);">EXIT TO DASHBOARD 🔒</button>
     </div>
   </div>
 
@@ -976,10 +1015,12 @@
     <div class="modal-card" style="max-width: 840px;">
       <div class="modal-header-icon">📋</div>
       <h2>ASSIGNED QUESTION BANK TESTS</h2>
-      <p class="modal-subtitle">Tests assigned by faculty teachers. Click "START PROTECTED TEST" to begin under anti-cheat protection.</p>
+      <p class="modal-subtitle">Tests assigned by faculty teachers. Click "START PROTECTED TEST" to begin under
+        anti-cheat protection.</p>
 
       <div id="studentAssignedTestsList" class="test-assignment-grid">
-        <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 2rem;">Loading assigned tests...</div>
+        <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 2rem;">Loading assigned
+          tests...</div>
       </div>
 
       <div class="modal-btn-row" style="margin-top: 1.5rem;">
@@ -993,4 +1034,5 @@
   <script src="aiEngine.js"></script>
   <script src="app.js"></script>
 </body>
+
 </html>
