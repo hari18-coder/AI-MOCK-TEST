@@ -26,12 +26,8 @@ MongoClient.connect(MONGODB_URI, { serverSelectionTimeoutMS: 3000 })
     console.warn(`⚠️ [MONGODB NOTICE] Could not connect to local MongoDB (${MONGODB_URI}): ${err.message}. System operating with in-memory persistence mode.`);
   });
 
-// In-Memory Multiplayer Room State & Audit Logs
+// In-Memory Multiplayer Room State
 const activeRooms = {}; // roomCode => { players: { [playerId]: { username, avatar, hp, score, lives, currentQuestionIndex, lastSeen } } }
-const inMemoryLogins = [];
-const inMemoryTestAttempts = [];
-const inMemoryDeviceLogs = [];
-const otpStore = {};
 
 // Periodic Room Cleaner (Remove inactive players after 30 seconds)
 setInterval(() => {
@@ -156,7 +152,7 @@ const server = http.createServer((req, res) => {
   }
 
   // In-Memory Persistence Stores
-  const otpStore = {};
+  const usersStore = {};
   const inMemoryLogins = [];
   const inMemoryAssignedTests = [
     {
@@ -576,8 +572,8 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // User Registration Route (/api/auth/register)
-  if (safePath === '/api/auth/register' || safePath === '\\api\\auth\\register') {
+  // User Password Login / Authentication Route (/api/auth/login)
+  if (safePath === '/api/auth/login' || safePath === '\\api\\auth\\login') {
     let body = '';
     req.on('data', chunk => body += chunk);
     req.on('end', async () => {
@@ -592,209 +588,48 @@ const server = http.createServer((req, res) => {
           return res.end(JSON.stringify({ error: 'Please enter a valid email address.' }));
         }
 
-        if (!cleanPassword || cleanPassword.length < 4) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ error: 'Password must be at least 4 characters long.' }));
-        }
-
-        const userDoc = {
-          email: cleanEmail,
-          password: cleanPassword,
-          username: username || cleanEmail.split('@')[0],
-          role: role || 'student',
-          authMethod: 'password',
-          isVerified: true,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
-
-        const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
-        const loginLogDoc = {
-          loginId: 'LOG-R-' + Date.now().toString(36).toUpperCase(),
-          email: cleanEmail,
-          username: userDoc.username,
-          role: userDoc.role,
-          authMethod: 'password_register',
-          status: 'SUCCESS (REGISTERED)',
-          ip: clientIp,
-          userAgent: req.headers['user-agent'] || 'Unknown',
-          timestamp: new Date()
-        };
-
-        inMemoryLogins.unshift(loginLogDoc);
-
-        if (mongoConnected && db) {
-          try {
-            const existingUser = await db.collection('users').findOne({ email: cleanEmail });
-            if (existingUser && existingUser.password && existingUser.password !== cleanPassword) {
-              res.writeHead(400, { 'Content-Type': 'application/json' });
-              return res.end(JSON.stringify({ error: 'Email already registered with a different password.' }));
-            }
-
-            await db.collection('users').updateOne(
-              { email: cleanEmail },
-              { $set: userDoc },
-              { upsert: true }
-            );
-            await db.collection('login_logs').insertOne(loginLogDoc);
-            console.log(`🍃 [MONGODB REGISTER] Registered user [${cleanEmail}] as [${userDoc.role}]`);
-          } catch (mErr) {
-            console.warn("MongoDB User register notice:", mErr.message);
-          }
-        }
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({
-          success: true,
-          message: 'Account registered successfully!',
-          user: userDoc
-        }));
-      } catch (e) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ error: e.message }));
-      }
-    });
-    return;
-  }
-
-  // User Password Login Route (/api/auth/login)
-  if (safePath === '/api/auth/login' || safePath === '\\api\\auth\\login') {
-    let body = '';
-    req.on('data', chunk => body += chunk);
-    req.on('end', async () => {
-      try {
-        const data = JSON.parse(body || '{}');
-        const { email, password, role } = data;
-        const cleanEmail = String(email || '').trim().toLowerCase();
-        const cleanPassword = String(password || '').trim();
-
-        if (!cleanEmail || !cleanEmail.includes('@')) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ error: 'Please enter a valid email address.' }));
-        }
-
         if (!cleanPassword) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
           return res.end(JSON.stringify({ error: 'Please enter your password.' }));
         }
 
-        let userDoc = null;
+        let userRecord = null;
+
+        // Check MongoDB for existing user
         if (mongoConnected && db) {
           try {
-            userDoc = await db.collection('users').findOne({ email: cleanEmail });
+            userRecord = await db.collection('users').findOne({ email: cleanEmail });
           } catch (mErr) {
             console.warn("MongoDB User lookup notice:", mErr.message);
           }
         }
 
-        if (userDoc) {
-          if (userDoc.password && userDoc.password !== cleanPassword) {
-            res.writeHead(400, { 'Content-Type': 'application/json' });
-            return res.end(JSON.stringify({ error: 'Incorrect password. Please check and try again.' }));
-          }
-        } else {
-          // Auto-create account if first login
-          userDoc = {
-            email: cleanEmail,
-            password: cleanPassword,
-            username: cleanEmail.split('@')[0],
-            role: role || 'student',
-            authMethod: 'password',
-            isVerified: true,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          };
+        // Check in-memory store if not found in MongoDB
+        if (!userRecord && usersStore[cleanEmail]) {
+          userRecord = usersStore[cleanEmail];
+        }
 
-          if (mongoConnected && db) {
-            try {
-              await db.collection('users').updateOne(
-                { email: cleanEmail },
-                { $set: userDoc },
-                { upsert: true }
-              );
-            } catch (mErr) {}
+        if (userRecord && userRecord.password) {
+          // Verify existing user password
+          if (userRecord.password !== cleanPassword) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ error: 'Incorrect password. Please check your credentials and try again.' }));
           }
         }
 
-        const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
-        const loginLogDoc = {
-          loginId: 'LOG-L-' + Date.now().toString(36).toUpperCase(),
-          email: cleanEmail,
-          username: userDoc.username,
-          role: userDoc.role || role || 'student',
-          authMethod: 'password_login',
-          status: 'SUCCESS (LOGIN)',
-          ip: clientIp,
-          userAgent: req.headers['user-agent'] || 'Unknown',
-          timestamp: new Date()
-        };
-
-        inMemoryLogins.unshift(loginLogDoc);
-
-        if (mongoConnected && db) {
-          try {
-            await db.collection('login_logs').insertOne(loginLogDoc);
-            console.log(`🌐 [PASSWORD LOGIN SUCCESS] Signed in user [${cleanEmail}] as [${userDoc.role}]`);
-          } catch (mErr) {}
-        }
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({
-          success: true,
-          message: 'Logged in successfully!',
-          user: userDoc
-        }));
-      } catch (e) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ error: e.message }));
-      }
-    });
-    return;
-  }
-
-  // Google / Gmail Sign In Route (/api/auth/google-login)
-  if (safePath === '/api/auth/google-login' || safePath === '\\api\\auth\\google-login') {
-    let body = '';
-    req.on('data', chunk => body += chunk);
-    req.on('end', async () => {
-      try {
-        const data = JSON.parse(body || '{}');
-        const { email, username, role, googleId, picture } = data;
-        const cleanEmail = String(email || '').trim().toLowerCase();
-
-        if (!cleanEmail || !cleanEmail.includes('@')) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ error: 'Valid Gmail address is required for Google Sign In.' }));
-        }
-
+        // Create or update user object
         const userDoc = {
           email: cleanEmail,
-          username: username || cleanEmail.split('@')[0],
-          role: role || 'student',
-          authMethod: 'google',
-          googleId: googleId || ('goog_' + Math.random().toString(36).substring(2, 10)),
-          picture: picture || '',
+          password: cleanPassword,
+          username: username || (userRecord ? userRecord.username : 'Scholar'),
+          role: role || (userRecord ? userRecord.role : 'student'),
           isVerified: true,
-          lastLoginAt: new Date(),
           updatedAt: new Date()
         };
 
-        const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+        usersStore[cleanEmail] = userDoc;
 
-        const loginLogDoc = {
-          loginId: 'LOG-G-' + Date.now().toString(36).toUpperCase(),
-          email: cleanEmail,
-          username: userDoc.username,
-          role: userDoc.role,
-          authMethod: 'google',
-          status: 'SUCCESS (GOOGLE AUTH)',
-          ip: clientIp,
-          userAgent: req.headers['user-agent'] || 'Unknown',
-          timestamp: new Date()
-        };
-
-        inMemoryLogins.unshift(loginLogDoc);
-
+        // Persist User Details to MongoDB Collection ('users')
         if (mongoConnected && db) {
           try {
             await db.collection('users').updateOne(
@@ -802,21 +637,19 @@ const server = http.createServer((req, res) => {
               { $set: userDoc },
               { upsert: true }
             );
-            await db.collection('login_logs').insertOne(loginLogDoc);
-            console.log(`🌐 [GOOGLE AUTH SUCCESS] Signed in user [${cleanEmail}] as [${userDoc.role}]`);
+            console.log(`🍃 [MONGODB persistent] Authenticated user [${cleanEmail}] (Role: ${userDoc.role})`);
           } catch (mErr) {
-            console.warn("MongoDB Google User save notice:", mErr.message);
+            console.warn("MongoDB User save notice:", mErr.message);
           }
         }
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({
           success: true,
-          message: `Google Sign In successful for ${userDoc.username}`,
+          message: 'Login successful!',
           user: userDoc
         }));
       } catch (e) {
-        console.error("Google login error:", e.stack || e.message);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ error: e.message }));
       }

@@ -204,14 +204,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
   // 4. AUDIO (REMOVED)
   // ==========================================
-  function initAudio() {}
-  function playTone() {}
-  function playClickSound() {}
-  function playCorrectSound() {}
-  function playWrongSound() {}
-  function playTickSound() {}
-  function playGameOverSound() {}
-  function playVictorySound() {}
+  function initAudio() { }
+  function playTone() { }
+  function playClickSound() { }
+  function playCorrectSound() { }
+  function playWrongSound() { }
+  function playTickSound() { }
+  function playGameOverSound() { }
+  function playVictorySound() { }
 
   // ==========================================
   // 5. 2D CANVAS BATTLE RENDERER
@@ -507,6 +507,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const q = gameState.activeQuestions[index];
     gameState.isAnswered = false;
 
+    // Normalize question object properties
+    if (q.correctIndex === undefined && q.answer !== undefined) {
+      if (typeof q.answer === 'number') {
+        q.correctIndex = q.answer;
+      } else if (typeof q.answer === 'string') {
+        const letterMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, '0': 0, '1': 1, '2': 2, '3': 3 };
+        q.correctIndex = letterMap[q.answer.trim().toUpperCase()] !== undefined ? letterMap[q.answer.trim().toUpperCase()] : 0;
+      }
+    }
+    if (q.correctIndex === undefined) q.correctIndex = 0;
+
+    if (!q.difficulty) q.difficulty = gameState.difficulty || 'medium';
+    if (!q.topic) q.topic = 'General Aptitude';
+
+    const parsedTime = parseInt(q.timeLimit, 10);
+    q.timeLimit = (!isNaN(parsedTime) && parsedTime > 0)
+      ? parsedTime
+      : (q.difficulty === 'hard' ? 60 : (q.difficulty === 'medium' ? 90 : 120));
+
     if (el.monsterName) el.monsterName.textContent = q.topic ? `${q.topic.toUpperCase()} SECTION` : 'QUANTITATIVE REASONING';
     if (el.topicTag) el.topicTag.textContent = `🎯 ${q.topic.toUpperCase()}`;
 
@@ -536,14 +555,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const pref = btn.querySelector('.opt-prefix');
         const txt = btn.querySelector('.opt-text');
         if (pref) pref.textContent = prefixes[idx];
-        if (txt) txt.textContent = q.options[idx];
+        if (txt) txt.textContent = (q.options && q.options[idx]) ? q.options[idx] : `Option ${prefixes[idx]}`;
       });
     }
 
     if (el.feedbackBanner) el.feedbackBanner.classList.add('hidden');
     if (el.nextBtn) el.nextBtn.style.display = 'block';
     updateQuestionPalette();
-    startTimer(q.timeLimit);
+    startTimer(q.timeLimit, q.timeLimit);
   }
 
   function updateQuestionPalette() {
@@ -566,7 +585,11 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', () => {
         if (!gameState.isAnswered) {
           gameState.currentQuestionIndex = idx;
-          loadQuestion(idx);
+          if (isPracticeMode) {
+            loadPracticeQuestion(idx);
+          } else {
+            loadQuestion(idx);
+          }
         }
       });
 
@@ -574,10 +597,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function startTimer(seconds) {
+  function startTimer(seconds, initialLimit) {
     clearInterval(gameState.timerInterval);
-    gameState.timerSeconds = seconds;
-    gameState.initialTimeLimit = seconds;
+
+    let validSeconds = 120;
+    if (typeof seconds === 'number' && !isNaN(seconds) && seconds > 0) {
+      validSeconds = Math.round(seconds);
+    } else if (typeof seconds === 'string') {
+      const p = parseInt(seconds, 10);
+      if (!isNaN(p) && p > 0) validSeconds = p;
+    }
+
+    let validInitial = validSeconds;
+    if (typeof initialLimit === 'number' && !isNaN(initialLimit) && initialLimit > 0) {
+      validInitial = Math.round(initialLimit);
+    } else if (typeof initialLimit === 'string') {
+      const p = parseInt(initialLimit, 10);
+      if (!isNaN(p) && p > 0) validInitial = p;
+    } else if (gameState.initialTimeLimit && gameState.initialTimeLimit >= validSeconds) {
+      validInitial = gameState.initialTimeLimit;
+    }
+
+    gameState.timerSeconds = validSeconds;
+    gameState.initialTimeLimit = validInitial;
 
     updateTimerDisplay();
 
@@ -597,14 +639,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateTimerDisplay() {
-    const mins = Math.floor(gameState.timerSeconds / 60);
-    const secs = gameState.timerSeconds % 60;
+    const current = Math.max(0, isNaN(gameState.timerSeconds) ? 0 : gameState.timerSeconds);
+    const initial = Math.max(1, isNaN(gameState.initialTimeLimit) ? 120 : gameState.initialTimeLimit);
+
+    const mins = Math.floor(current / 60);
+    const secs = current % 60;
     const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     if (el.timerClock) el.timerClock.textContent = formatted;
 
-    const percentage = (gameState.timerSeconds / gameState.initialTimeLimit) * 100;
+    const percentage = Math.min(100, Math.max(0, (current / initial) * 100));
     if (el.timerBarFill) {
-      el.timerBarFill.style.width = `${Math.max(0, percentage)}%`;
+      el.timerBarFill.style.width = `${percentage}%`;
 
       if (percentage <= 25) {
         el.timerBarFill.className = 'timer-bar-fill danger-warning';
@@ -629,11 +674,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const q = gameState.activeQuestions[gameState.currentQuestionIndex];
     const isCorrect = selectedIndex === q.correctIndex;
 
+    // Neutral selection highlight during test (NO correct/wrong color reveal until test is complete!)
     if (el.optionBtns) {
       el.optionBtns.forEach((btn, idx) => {
         btn.disabled = true;
-        if (idx === q.correctIndex) btn.classList.add('correct');
-        else if (idx === selectedIndex && !isCorrect) btn.classList.add('wrong');
+        if (idx === selectedIndex) btn.classList.add('selected');
       });
     }
 
@@ -647,9 +692,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const q = gameState.activeQuestions[gameState.currentQuestionIndex];
     if (el.optionBtns) {
-      el.optionBtns.forEach((btn, idx) => {
+      el.optionBtns.forEach((btn) => {
         btn.disabled = true;
-        if (idx === q.correctIndex) btn.classList.add('correct');
       });
     }
 
@@ -671,6 +715,20 @@ document.addEventListener('DOMContentLoaded', () => {
     gameState.xp += totalGained;
     updateHud();
 
+    if (!gameState.userAnswers) gameState.userAnswers = [];
+    const correctOptText = (q.options && q.options[q.correctIndex]) ? q.options[q.correctIndex] : `Option ${q.correctIndex + 1}`;
+    gameState.userAnswers.push({
+      qIndex: gameState.currentQuestionIndex + 1,
+      topic: q.topic || 'General Aptitude',
+      question: q.question,
+      selectedOpt: correctOptText,
+      correctOpt: correctOptText,
+      isCorrect: true,
+      isTimeout: false,
+      pointsGained: totalGained,
+      explanation: q.explanation || 'Detailed step-by-step mathematical reasoning.'
+    });
+
     const totalQuestions = gameState.activeQuestions.length;
     const progressPercent = Math.round(((gameState.currentQuestionIndex + 1) / totalQuestions) * 100);
 
@@ -678,16 +736,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setTimeout(() => {
       triggerArenaFlash('green');
-    }, 150);
+    }, 100);
 
-    if (el.feedbackBanner) {
-      el.feedbackBanner.className = 'feedback-banner is-correct';
-      if (el.feedbackIcon) el.feedbackIcon.textContent = '✓';
-      if (el.feedbackTitle) el.feedbackTitle.textContent = 'CORRECT ANSWER!';
-      if (el.xpGainedBadge) el.xpGainedBadge.textContent = `+${totalGained} XP`;
-      if (el.explanationText) el.explanationText.textContent = `✅ PERFECT DERIVATION:\n${q.explanation}`;
-      el.feedbackBanner.classList.remove('hidden');
-    }
+    if (el.feedbackBanner) el.feedbackBanner.classList.add('hidden');
+    if (practiceAnswerBox) practiceAnswerBox.classList.add('hidden');
+
+    // Smoothly advance to next question without inline explanation clutter
+    setTimeout(() => {
+      nextChallenge();
+    }, 500);
   }
 
   function handleWrongAnswer(q, selectedIndex, isTimeout) {
@@ -695,6 +752,30 @@ document.addEventListener('DOMContentLoaded', () => {
     gameState.streak = 0;
     gameState.wrongAnswers = (gameState.wrongAnswers || 0) + 1;
     updateHud();
+
+    if (!gameState.userAnswers) gameState.userAnswers = [];
+    const selectedOptText = isTimeout
+      ? '⏱️ Time Expired'
+      : (selectedIndex >= 0 && q.options && q.options[selectedIndex])
+        ? q.options[selectedIndex]
+        : 'Invalid Option';
+    const correctOptText = (q.options && q.options[q.correctIndex]) ? q.options[q.correctIndex] : `Option ${q.correctIndex + 1}`;
+
+    const explanationText = (selectedIndex >= 0 && window.AptitudeAiEngine)
+      ? window.AptitudeAiEngine.generateWrongAnswerExplanation(q, selectedIndex)
+      : `❌ TIME EXPIRED!\n\n✅ CORRECT DERIVATION:\n${q.explanation}`;
+
+    gameState.userAnswers.push({
+      qIndex: gameState.currentQuestionIndex + 1,
+      topic: q.topic || 'General Aptitude',
+      question: q.question,
+      selectedOpt: selectedOptText,
+      correctOpt: correctOptText,
+      isCorrect: false,
+      isTimeout: isTimeout,
+      pointsGained: 0,
+      explanation: explanationText
+    });
 
     const totalQuestions = gameState.activeQuestions.length;
     const progressPercent = Math.round(((gameState.currentQuestionIndex + 1) / totalQuestions) * 100);
@@ -704,24 +785,15 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       triggerArenaFlash('red');
       triggerScreenShake();
-    }, 150);
+    }, 100);
 
-    if (el.feedbackBanner) {
-      el.feedbackBanner.className = 'feedback-banner is-wrong';
-      if (el.feedbackIcon) el.feedbackIcon.textContent = '✗';
-      if (el.feedbackTitle) {
-        el.feedbackTitle.textContent = isTimeout ? 'TIME EXPIRED!' : 'WRONG ANSWER!';
-      }
-      if (el.xpGainedBadge) el.xpGainedBadge.textContent = '+0 XP';
+    if (el.feedbackBanner) el.feedbackBanner.classList.add('hidden');
+    if (practiceAnswerBox) practiceAnswerBox.classList.add('hidden');
 
-      // Delegate Wrong Answer Mistake Breakdown to window.AptitudeAiEngine
-      const explanationText = (selectedIndex >= 0 && window.AptitudeAiEngine)
-        ? window.AptitudeAiEngine.generateWrongAnswerExplanation(q, selectedIndex)
-        : `❌ TIME EXPIRED!\n\n✅ CORRECT DERIVATION:\n${q.explanation}`;
-
-      if (el.explanationText) el.explanationText.textContent = explanationText;
-      el.feedbackBanner.classList.remove('hidden');
-    }
+    // Smoothly advance to next question without inline explanation clutter
+    setTimeout(() => {
+      nextChallenge();
+    }, 500);
   }
 
   function triggerScreenShake() {
@@ -756,7 +828,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (gameState.currentQuestionIndex >= gameState.activeQuestions.length) {
       triggerVictory();
     } else {
-      loadQuestion(gameState.currentQuestionIndex);
+      if (isPracticeMode) loadPracticeQuestion(gameState.currentQuestionIndex);
+      else loadQuestion(gameState.currentQuestionIndex);
     }
   }
 
@@ -777,29 +850,165 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalQ = gameState.activeQuestions ? gameState.activeQuestions.length : 0;
     const correct = gameState.correctAnswers || 0;
     const wrong = gameState.wrongAnswers || 0;
-    const accuracy = totalQ > 0 ? Math.round((correct / totalQ) * 100) : 100;
+    const accuracy = totalQ > 0 ? Math.round((correct / totalQ) * 100) : 0;
 
-    if (el.vicFinalScore) el.vicFinalScore.textContent = gameState.score;
+    const candName = (gameState.user && gameState.user.username) ? gameState.user.username : 'Scholar Candidate';
+    const candEmail = (gameState.user && gameState.user.email) ? gameState.user.email : (gameState.userEmail || 'scholar@example.com');
+    const candAvatar = (gameState.user && gameState.user.avatar) ? gameState.user.avatar : '🎓';
+
+    const vicCandidateName = document.getElementById('vicCandidateName');
+    const vicCandidateEmail = document.getElementById('vicCandidateEmail');
+    const vicAvatar = document.getElementById('vicAvatar');
+    const vicCorrectCount = document.getElementById('vicCorrectCount');
+    const vicStreak = document.getElementById('vicStreak');
+    const vicPassStatusBadge = document.getElementById('vicPassStatusBadge');
+
+    if (vicCandidateName) vicCandidateName.textContent = candName;
+    if (vicCandidateEmail) vicCandidateEmail.textContent = `${candEmail} • Candidate Session`;
+    if (vicAvatar) vicAvatar.textContent = candAvatar;
+
+    if (el.vicFinalScore) el.vicFinalScore.textContent = `${gameState.score} Points`;
+    if (vicCorrectCount) vicCorrectCount.textContent = `${correct} / ${totalQ}`;
     if (el.vicAccuracy) el.vicAccuracy.textContent = `${accuracy}%`;
-    if (el.vicLives) el.vicLives.textContent = `${correct} / ${totalQ}`;
+    if (vicStreak) vicStreak.textContent = `${gameState.maxStreak}x`;
+
+    // Sector / Topic Accuracy Analysis
+    const topicStats = {};
+    if (gameState.userAnswers && gameState.userAnswers.length > 0) {
+      gameState.userAnswers.forEach(ans => {
+        const top = ans.topic || 'General Aptitude';
+        if (!topicStats[top]) topicStats[top] = { total: 0, correct: 0 };
+        topicStats[top].total++;
+        if (ans.isCorrect) topicStats[top].correct++;
+      });
+    }
+
+    const weakSectors = [];
+    const masteredSectors = [];
+    Object.keys(topicStats).forEach(top => {
+      const acc = Math.round((topicStats[top].correct / topicStats[top].total) * 100);
+      if (acc < 100) {
+        weakSectors.push({ topic: top, accuracy: acc, correct: topicStats[top].correct, total: topicStats[top].total });
+      } else {
+        masteredSectors.push({ topic: top, accuracy: acc, correct: topicStats[top].correct, total: topicStats[top].total });
+      }
+    });
+
+    weakSectors.sort((a, b) => a.accuracy - b.accuracy);
+
+    const vicSectorAnalysisCard = document.getElementById('vicSectorAnalysisCard');
+    const vicWeakSectorTag = document.getElementById('vicWeakSectorTag');
+    const vicTargetSectorName = document.getElementById('vicTargetSectorName');
+    const vicSectorAdviceText = document.getElementById('vicSectorAdviceText');
+
+    if (weakSectors.length > 0) {
+      const primaryWeakTopic = weakSectors[0].topic;
+      const primaryWeakUpper = primaryWeakTopic.toUpperCase();
+
+      if (vicPassStatusBadge) {
+        vicPassStatusBadge.textContent = `NEEDS IMPROVEMENT IN: ${primaryWeakUpper}`;
+        vicPassStatusBadge.className = 'difficulty-badge hard';
+        vicPassStatusBadge.style.padding = '0.35rem 0.9rem';
+        vicPassStatusBadge.style.fontSize = '0.82rem';
+      }
+
+      if (vicSectorAnalysisCard) {
+        vicSectorAnalysisCard.style.borderLeft = '4px solid #ef4444';
+      }
+      if (vicWeakSectorTag) {
+        vicWeakSectorTag.textContent = `TARGET: ${primaryWeakUpper}`;
+        vicWeakSectorTag.className = 'difficulty-badge hard';
+      }
+      if (vicSectorAdviceText) {
+        const weakListStr = weakSectors.map(s => `<strong style="color: #ef4444;">${s.topic} (${s.accuracy}% Accuracy)</strong>`).join(', ');
+        vicSectorAdviceText.innerHTML = `⚠️ Candidate requires focused practice in the following sector(s): ${weakListStr}. Review official step-by-step AI derivations below for targeted conceptual improvement.`;
+      }
+    } else {
+      if (vicPassStatusBadge) {
+        vicPassStatusBadge.textContent = 'PASSED - ALL SECTORS MASTERED';
+        vicPassStatusBadge.className = 'difficulty-badge easy';
+        vicPassStatusBadge.style.padding = '0.35rem 0.9rem';
+        vicPassStatusBadge.style.fontSize = '0.82rem';
+      }
+
+      if (vicSectorAnalysisCard) {
+        vicSectorAnalysisCard.style.borderLeft = '4px solid var(--accent-emerald-bright)';
+      }
+      if (vicWeakSectorTag) {
+        vicWeakSectorTag.textContent = '100% MASTERY';
+        vicWeakSectorTag.className = 'difficulty-badge easy';
+      }
+      if (vicSectorAdviceText) {
+        vicSectorAdviceText.innerHTML = `🎉 Outstanding performance! Candidate achieved <strong style="color: var(--accent-emerald-bright);">100% accuracy across all evaluated sectors</strong>. Review solution references below for deeper technical insights.`;
+      }
+    }
 
     let rank = "APTITUDE SCHOLAR";
-    if (gameState.score >= 1000) rank = "GRANDMASTER OF APTITUDE";
-    else if (gameState.score >= 600) rank = "APTITUDE MASTER";
-    else if (gameState.score >= 300) rank = "TACTICAL REASONER";
+    if (gameState.score >= 1000) rank = "DISTINCTION - GRANDMASTER";
+    else if (gameState.score >= 600) rank = "MERIT - APTITUDE MASTER";
+    else if (gameState.score >= 300) rank = "PASS - TACTICAL REASONER";
+    else rank = "PARTICIPANT";
 
     if (el.vicRankBadge) el.vicRankBadge.textContent = rank;
+
+    // Render detailed AI-generated solution reference cards at the END OF THE TEST
+    const vicAiSolutionsList = document.getElementById('vicAiSolutionsList');
+    if (vicAiSolutionsList) {
+      vicAiSolutionsList.innerHTML = '';
+      if (gameState.userAnswers && gameState.userAnswers.length > 0) {
+        gameState.userAnswers.forEach(ans => {
+          const card = document.createElement('div');
+          card.style.background = 'rgba(15, 23, 42, 0.85)';
+          card.style.border = ans.isCorrect ? '1px solid var(--accent-emerald-border)' : '1px solid rgba(239, 68, 68, 0.4)';
+          card.style.borderRadius = 'var(--radius-sm)';
+          card.style.padding = '1rem 1.1rem';
+          card.style.display = 'flex';
+          card.style.flexDirection = 'column';
+          card.style.gap = '0.6rem';
+          card.style.textAlign = 'left';
+
+          const statusTag = ans.isCorrect
+            ? `<span class="difficulty-badge easy" style="font-size: 0.75rem; font-weight: 800; padding: 2px 8px;">✓ CORRECT (+${ans.pointsGained} PTS)</span>`
+            : ans.isTimeout
+              ? `<span class="difficulty-badge hard" style="font-size: 0.75rem; font-weight: 800; padding: 2px 8px;">⏱️ TIME EXPIRED</span>`
+              : `<span class="difficulty-badge hard" style="font-size: 0.75rem; font-weight: 800; padding: 2px 8px;">✗ INCORRECT (0 PTS)</span>`;
+
+          card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-family: var(--font-tech); font-weight: 700; font-size: 0.82rem; color: var(--accent-cyan-bright); letter-spacing: 1px;">Q${ans.qIndex} • ${(ans.topic || 'General Aptitude').toUpperCase()}</span>
+              ${statusTag}
+            </div>
+            
+            <div style="font-size: 0.98rem; font-weight: 600; color: var(--text-main); line-height: 1.5;">${ans.question}</div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 1.2rem; font-size: 0.85rem; padding: 0.55rem 0.85rem; background: rgba(9, 13, 22, 0.6); border-radius: 6px; border: 1px solid var(--border-color);">
+              <div>User Choice: <strong style="color: ${ans.isCorrect ? 'var(--accent-emerald-bright)' : '#ef4444'};">${ans.selectedOpt}</strong></div>
+              <div>Correct Option: <strong style="color: var(--accent-emerald-bright);">${ans.correctOpt}</strong></div>
+            </div>
+
+            <div style="font-size: 0.84rem; background: rgba(6, 182, 212, 0.08); border: 1px solid var(--accent-cyan-border); padding: 0.85rem 1rem; border-radius: 6px; border-left: 4px solid var(--accent-cyan-bright); color: #e2e8f0; white-space: pre-line; line-height: 1.55;">
+<strong style="color: var(--accent-cyan-bright); font-family: var(--font-heading); font-size: 0.88rem;">💡 AI GENERATED SOLUTION & STEP-BY-STEP DERIVATION:</strong>
+${ans.explanation}
+            </div>
+          `;
+          vicAiSolutionsList.appendChild(card);
+        });
+      } else {
+        vicAiSolutionsList.innerHTML = `<div style="text-align: center; padding: 1.5rem; color: var(--text-muted);">No evaluation questions recorded.</div>`;
+      }
+    }
+
     if (el.victoryOverlay) el.victoryOverlay.classList.remove('hidden');
 
-    // Save Test Report to MongoDB Database
+    // Save Test Report to Backend Database
     fetch('/api/test/report', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        roomCode: gameState.roomCode,
-        email: gameState.user.email || 'scholar@example.com',
-        username: gameState.user.username || 'Scholar',
-        role: gameState.user.role || 'student',
+        roomCode: gameState.roomCode || 'SOLO',
+        email: candEmail,
+        username: candName,
+        role: gameState.user ? gameState.user.role : 'student',
         score: gameState.score,
         accuracy: `${accuracy}%`,
         totalQuestions: totalQ,
@@ -808,6 +1017,13 @@ document.addEventListener('DOMContentLoaded', () => {
         difficulty: gameState.difficulty
       })
     }).catch(e => console.warn("Failed to persist test report to MongoDB:", e));
+  }
+
+  const printScorecardBtn = document.getElementById('printScorecardBtn');
+  if (printScorecardBtn) {
+    printScorecardBtn.addEventListener('click', () => {
+      window.print();
+    });
   }
 
   // ==========================================
@@ -834,24 +1050,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (chosenRole === 'student') {
           if (loginPortalBadge) loginPortalBadge.textContent = '🎓 STUDENT EVALUATION & ASSESSMENT PORTAL';
           if (usernameLabel) usernameLabel.textContent = 'STUDENT FULL NAME';
-          if (emailLabel) emailLabel.textContent = 'STUDENT EMAIL ADDRESS (SIGNUP VERIFICATION)';
-          if (el.confirmLoginBtn) el.confirmLoginBtn.textContent = 'VERIFY OTP & ENTER STUDENT PORTAL ▶';
+          if (emailLabel) emailLabel.textContent = 'STUDENT EMAIL ADDRESS';
+          if (el.confirmLoginBtn) el.confirmLoginBtn.textContent = 'ENTER STUDENT PORTAL ▶';
           if (studentTrackBox) studentTrackBox.style.display = 'flex';
           if (teacherDeptBox) teacherDeptBox.classList.add('hidden');
           if (adminPasscodeBox) adminPasscodeBox.classList.add('hidden');
         } else if (chosenRole === 'staff') {
           if (loginPortalBadge) loginPortalBadge.textContent = '👨‍🏫 TEACHER / FACULTY QUESTION BANK & SETUP PORTAL';
           if (usernameLabel) usernameLabel.textContent = 'TEACHER / FACULTY FULL NAME';
-          if (emailLabel) emailLabel.textContent = 'FACULTY EMAIL ADDRESS (SIGNUP VERIFICATION)';
-          if (el.confirmLoginBtn) el.confirmLoginBtn.textContent = 'VERIFY OTP & LAUNCH TEACHER QB BUILDER ▶';
+          if (emailLabel) emailLabel.textContent = 'FACULTY EMAIL ADDRESS';
+          if (el.confirmLoginBtn) el.confirmLoginBtn.textContent = 'LAUNCH TEACHER QB BUILDER ▶';
           if (studentTrackBox) studentTrackBox.style.display = 'none';
           if (teacherDeptBox) teacherDeptBox.classList.remove('hidden');
           if (adminPasscodeBox) adminPasscodeBox.classList.add('hidden');
         } else if (chosenRole === 'admin') {
           if (loginPortalBadge) loginPortalBadge.textContent = '🛡️ ADMINISTRATOR LIVE PROCTORING & MONITOR PORTAL';
           if (usernameLabel) usernameLabel.textContent = 'ADMINISTRATOR FULL NAME';
-          if (emailLabel) emailLabel.textContent = 'ADMIN EMAIL ADDRESS (SIGNUP VERIFICATION)';
-          if (el.confirmLoginBtn) el.confirmLoginBtn.textContent = 'VERIFY OTP & LAUNCH ADMIN LIVE MONITOR ▶';
+          if (emailLabel) emailLabel.textContent = 'ADMIN EMAIL ADDRESS';
+          if (el.confirmLoginBtn) el.confirmLoginBtn.textContent = 'LAUNCH ADMIN LIVE MONITOR ▶';
           if (studentTrackBox) studentTrackBox.style.display = 'none';
           if (teacherDeptBox) teacherDeptBox.classList.add('hidden');
           if (adminPasscodeBox) adminPasscodeBox.classList.remove('hidden');
@@ -872,21 +1088,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ==========================================
-  // PASSWORD & GOOGLE (GMAIL) AUTHENTICATION
-  // ==========================================
-  const confirmLoginBtn = document.getElementById('confirmLoginBtn');
-  const usernameInput = document.getElementById('usernameInput');
+  // Password Authentication Handlers
   const emailInput = document.getElementById('emailInput');
   const passwordInput = document.getElementById('passwordInput');
   const authStatusMessage = document.getElementById('authStatusMessage');
 
-  if (confirmLoginBtn) {
-    confirmLoginBtn.addEventListener('click', async () => {
-      const username = usernameInput ? usernameInput.value.trim() : 'User';
+  const authLoginPage = document.getElementById('authLoginPage');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      if (authLoginPage) authLoginPage.classList.remove('hidden');
+    });
+  }
+
+  // Login Confirm Button with Password Authentication
+  if (el.confirmLoginBtn) {
+    el.confirmLoginBtn.addEventListener('click', async () => {
+      const val = el.usernameInput ? el.usernameInput.value.trim() : '';
       const email = emailInput ? emailInput.value.trim() : '';
       const password = passwordInput ? passwordInput.value.trim() : '';
-      const role = currentProfession === 'teacher' ? 'staff' : currentProfession;
+
+      if (val) gameState.user.username = val;
+      if (!gameState.user.role) gameState.user.role = 'student';
 
       if (!email || !email.includes('@')) {
         if (authStatusMessage) {
@@ -906,174 +1130,57 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const origText = confirmLoginBtn.textContent;
-      confirmLoginBtn.disabled = true;
-      confirmLoginBtn.textContent = 'AUTHENTICATING...';
-
       try {
-        const res = await fetch('/api/auth/login', {
+        const response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, username, role })
+          body: JSON.stringify({
+            email,
+            password,
+            username: gameState.user.username,
+            role: gameState.user.role
+          })
         });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          completeUserLogin({
-            email: data.user.email,
-            username: data.user.username || username,
-            role: data.user.role || role,
-            authMethod: 'password'
-          });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          gameState.user.email = email;
+          gameState.user.isVerified = true;
+          updateProfileHud();
+          if (authLoginPage) authLoginPage.classList.add('hidden');
+          if (el.loginModal) el.loginModal.classList.add('hidden');
+
+          if (gameState.user.role === 'staff') {
+            const teacherQbModal = document.getElementById('teacherQbModal');
+            if (teacherQbModal) teacherQbModal.classList.remove('hidden');
+          } else if (gameState.user.role === 'admin') {
+            const adminMonitorModal = document.getElementById('adminMonitorModal');
+            if (adminMonitorModal) {
+              fetchAdminMonitorData();
+              adminMonitorModal.classList.remove('hidden');
+            }
+          }
         } else {
           if (authStatusMessage) {
             authStatusMessage.className = 'qb-status-msg error';
-            authStatusMessage.textContent = `❌ ${data.error || 'Authentication failed'}`;
+            authStatusMessage.textContent = `❌ ${data.error || 'Login failed. Please check your credentials.'}`;
             authStatusMessage.classList.remove('hidden');
           }
         }
-      } catch (e) {
-        completeUserLogin({ email, username, role, authMethod: 'password' });
-      } finally {
-        confirmLoginBtn.disabled = false;
-        confirmLoginBtn.textContent = origText;
-      }
-    });
-  }
-
-  // Google Modal Listeners
-  if (googleAuthBtn) {
-    googleAuthBtn.addEventListener('click', () => {
-      if (gAuthTargetRole) {
-        gAuthTargetRole.textContent = currentProfession === 'student' ? 'Student Portal' : (currentProfession === 'admin' ? 'Admin Portal' : 'Teacher Portal');
-      }
-      if (googleAuthModal) googleAuthModal.classList.remove('hidden');
-    });
-  }
-
-  if (closeGoogleAuthBtn && googleAuthModal) {
-    closeGoogleAuthBtn.addEventListener('click', () => googleAuthModal.classList.add('hidden'));
-  }
-
-  if (gAccountItems) {
-    gAccountItems.forEach(item => {
-      item.addEventListener('click', () => {
-        const email = item.dataset.email;
-        const name = item.dataset.name;
-        executeGoogleLogin(email, name, currentProfession === 'teacher' ? 'staff' : currentProfession);
-      });
-    });
-  }
-
-  if (gCustomSubmitBtn && gCustomEmailInput) {
-    gCustomSubmitBtn.addEventListener('click', () => {
-      const email = gCustomEmailInput.value.trim();
-      if (!email || !email.includes('@')) {
-        alert("Please enter a valid Gmail address!");
-        return;
-      }
-      const name = email.split('@')[0];
-      executeGoogleLogin(email, name, currentProfession === 'teacher' ? 'staff' : currentProfession);
-    });
-  }
-
-  async function executeGoogleLogin(email, username, role) {
-    try {
-      const res = await fetch('/api/auth/google-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, username, role })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        if (googleAuthModal) googleAuthModal.classList.add('hidden');
-        completeUserLogin({
-          email: data.user.email,
-          username: data.user.username,
-          role: data.user.role,
-          authMethod: 'google'
-        });
-      } else {
-        alert(`❌ Google Auth Failed: ${data.error || 'Check email'}`);
-      }
-    } catch (e) {
-      if (googleAuthModal) googleAuthModal.classList.add('hidden');
-      completeUserLogin({ email, username, role, authMethod: 'google' });
-    }
-  }
-
-  // ==========================================
-  // COMPLETE USER LOGIN & UI ROLE SCOPING
-  // ==========================================
-  function completeUserLogin(user) {
-    gameState.user.username = user.username || 'Scholar';
-    gameState.user.email = user.email || 'user@example.com';
-    gameState.user.role = user.role || 'student';
-    gameState.user.isVerified = true;
-
-    updateProfileHud();
-    applyRoleUiPermissions(gameState.user.role);
-
-    if (authLoginPage) {
-      authLoginPage.classList.add('hidden');
-      authLoginPage.style.display = 'none';
-    }
-    if (el.loginModal) {
-      el.loginModal.classList.add('hidden');
-      el.loginModal.style.display = 'none';
-    }
-
-    if (gameState.user.role === 'staff' || gameState.user.role === 'teacher') {
-      const teacherQbModal = document.getElementById('teacherQbModal');
-      if (teacherQbModal) teacherQbModal.classList.remove('hidden');
-    } else if (gameState.user.role === 'admin') {
-      const adminMonitorModal = document.getElementById('adminMonitorModal');
-      if (adminMonitorModal) {
-        fetchAdminMonitorData();
-        adminMonitorModal.classList.remove('hidden');
-      }
-    }
-  }
-
-  function applyRoleUiPermissions(role) {
-    const studentPracticeBtn = document.getElementById('studentPracticeBtn');
-    const studentAssignedTestsBtn = document.getElementById('studentAssignedTestsBtn');
-    const teacherQbBtn = document.getElementById('teacherQbBtn');
-    const adminAuditBtn = document.getElementById('adminAuditBtn');
-
-    if (role === 'student') {
-      if (studentPracticeBtn) studentPracticeBtn.classList.remove('hidden');
-      if (studentAssignedTestsBtn) studentAssignedTestsBtn.classList.remove('hidden');
-      if (teacherQbBtn) teacherQbBtn.classList.add('hidden');
-      if (adminAuditBtn) adminAuditBtn.classList.add('hidden');
-    } else if (role === 'staff' || role === 'teacher') {
-      if (studentPracticeBtn) studentPracticeBtn.classList.add('hidden');
-      if (studentAssignedTestsBtn) studentAssignedTestsBtn.classList.add('hidden');
-      if (teacherQbBtn) teacherQbBtn.classList.remove('hidden');
-      if (adminAuditBtn) adminAuditBtn.classList.add('hidden');
-    } else if (role === 'admin') {
-      if (studentPracticeBtn) studentPracticeBtn.classList.add('hidden');
-      if (studentAssignedTestsBtn) studentAssignedTestsBtn.classList.add('hidden');
-      if (teacherQbBtn) teacherQbBtn.classList.remove('hidden');
-      if (adminAuditBtn) adminAuditBtn.classList.remove('hidden');
-    }
-  }
-
-  const logoutBtn = document.getElementById('logoutBtn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      if (authLoginPage) {
-        authLoginPage.classList.remove('hidden');
-        authLoginPage.style.display = 'flex';
+      } catch (err) {
+        if (authStatusMessage) {
+          authStatusMessage.className = 'qb-status-msg error';
+          authStatusMessage.textContent = `❌ Connection Error: ${err.message}`;
+          authStatusMessage.classList.remove('hidden');
+        }
       }
     });
   }
 
   if (el.userProfileBtn) {
     el.userProfileBtn.addEventListener('click', () => {
-      if (authLoginPage) {
-        authLoginPage.classList.remove('hidden');
-        authLoginPage.style.display = 'flex';
-      }
+      if (authLoginPage) authLoginPage.classList.remove('hidden');
     });
   }
   if (el.setupGameBtn && el.setupModal) {
@@ -1882,12 +1989,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Handle Login Topic Select All
+  const loginSelectAllTopicsBtn = document.getElementById('loginSelectAllTopicsBtn');
+  if (loginSelectAllTopicsBtn) {
+    loginSelectAllTopicsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const cbs = document.querySelectorAll('.login-topic-cb');
+      const allChecked = Array.from(cbs).every(cb => cb.checked);
+      cbs.forEach(cb => cb.checked = !allChecked);
+      loginSelectAllTopicsBtn.textContent = allChecked ? 'Select All' : 'Deselect All';
+    });
+  }
+
   // Handle Confirm Login
   if (el.confirmLoginBtn) {
     el.confirmLoginBtn.addEventListener('click', async () => {
       const username = el.usernameInput ? el.usernameInput.value.trim() : 'Scholar';
       const email = el.emailInput ? el.emailInput.value.trim() : 'scholar@example.com';
       const passcode = document.getElementById('adminPasscodeInput') ? document.getElementById('adminPasscodeInput').value.trim() : '';
+
+      // Collect user's chosen test topics from login page
+      const selectedTopicCbs = document.querySelectorAll('.login-topic-cb:checked');
+      if (selectedTopicCbs.length > 0) {
+        gameState.selectedTopics = Array.from(selectedTopicCbs).map(cb => cb.value);
+      }
 
       try {
         const response = await fetch('/api/auth/login', {
@@ -1917,9 +2042,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateProfileHud();
         updateRoleView();
-        
+
         if (activeRole === 'admin') {
-          openAdminAuditModal();
+          if (adminMonitorModal) adminMonitorModal.classList.remove('hidden');
         } else if (activeRole === 'staff' || activeRole === 'teacher') {
           if (teacherQbModal) teacherQbModal.classList.remove('hidden');
         } else {
@@ -1944,9 +2069,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Student AI Self-Practice Mode
+  // Student AI Self-Practice Mode (Opens Topic Selector)
   if (studentPracticeBtn) {
-    studentPracticeBtn.addEventListener('click', startPracticeMode);
+    studentPracticeBtn.addEventListener('click', () => {
+      if (el.setupModal) el.setupModal.classList.remove('hidden');
+    });
   }
 
   async function startPracticeMode() {
@@ -1955,7 +2082,7 @@ document.addEventListener('DOMContentLoaded', () => {
     enableAntiCheatProtection(false);
 
     if (protectedTestBanner) protectedTestBanner.classList.add('hidden');
-    if (practiceAnswerBox) practiceAnswerBox.classList.remove('hidden');
+    if (practiceAnswerBox) practiceAnswerBox.classList.add('hidden');
 
     if (window.AptitudeAiEngine) {
       gameState.activeQuestions = await window.AptitudeAiEngine.generatePracticeQuestions(
@@ -1971,10 +2098,39 @@ document.addEventListener('DOMContentLoaded', () => {
   function loadPracticeQuestion(index) {
     if (!gameState.activeQuestions || index >= gameState.activeQuestions.length) return;
     const q = gameState.activeQuestions[index];
+    gameState.isAnswered = false;
+
+    // Normalize question object properties
+    if (q.correctIndex === undefined && q.answer !== undefined) {
+      if (typeof q.answer === 'number') {
+        q.correctIndex = q.answer;
+      } else if (typeof q.answer === 'string') {
+        const letterMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, '0': 0, '1': 1, '2': 2, '3': 3 };
+        q.correctIndex = letterMap[q.answer.trim().toUpperCase()] !== undefined ? letterMap[q.answer.trim().toUpperCase()] : 0;
+      }
+    }
+    if (q.correctIndex === undefined) q.correctIndex = 0;
+    if (!q.difficulty) q.difficulty = gameState.difficulty || 'medium';
+    if (!q.topic) q.topic = 'General Aptitude';
+
+    const parsedTime = parseInt(q.timeLimit, 10);
+    q.timeLimit = (!isNaN(parsedTime) && parsedTime > 0)
+      ? parsedTime
+      : (q.difficulty === 'hard' ? 60 : (q.difficulty === 'medium' ? 90 : 120));
 
     if (el.questionText) el.questionText.textContent = q.question;
     if (el.qCurrentNum) el.qCurrentNum.textContent = index + 1;
     if (el.qTotalNum) el.qTotalNum.textContent = gameState.activeQuestions.length;
+    if (el.hudStage) el.hudStage.textContent = `${index + 1} / ${gameState.activeQuestions.length}`;
+
+    if (el.monsterName) el.monsterName.textContent = `${q.topic.toUpperCase()} SECTION`;
+    if (el.topicTag) el.topicTag.textContent = `🎯 ${q.topic.toUpperCase()}`;
+
+    if (el.difficultyBadge) {
+      el.difficultyBadge.textContent = q.difficulty.toUpperCase();
+      el.difficultyBadge.className = `difficulty-badge ${q.difficulty}`;
+    }
+    if (el.timeAllowedBadge) el.timeAllowedBadge.textContent = `⏱️ ${q.timeLimit}s Limit`;
 
     if (el.optionBtns) {
       const prefixes = ['A', 'B', 'C', 'D'];
@@ -1984,28 +2140,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const pref = btn.querySelector('.opt-prefix');
         const txt = btn.querySelector('.opt-text');
         if (pref) pref.textContent = prefixes[idx];
-        if (txt) txt.textContent = q.options[idx];
+        if (txt) txt.textContent = (q.options && q.options[idx]) ? q.options[idx] : `Option ${prefixes[idx]}`;
       });
     }
 
-    if (practiceAnswerText && practiceExplanationText) {
-      practiceAnswerText.textContent = q.correctAnswerDisplay || `Option ${['A','B','C','D'][q.correctIndex]}: ${q.options[q.correctIndex]}`;
-      practiceExplanationText.textContent = q.explanationDisplay || q.explanation || 'Detailed step-by-step reasoning.';
-    }
-  }
-
-  if (toggleAnswerVisibilityBtn) {
-    toggleAnswerVisibilityBtn.addEventListener('click', () => {
-      if (practiceAnswerText.style.display === 'none') {
-        practiceAnswerText.style.display = 'block';
-        practiceExplanationText.style.display = 'block';
-        toggleAnswerVisibilityBtn.textContent = '👁️ HIDE ANSWER';
-      } else {
-        practiceAnswerText.style.display = 'none';
-        practiceExplanationText.style.display = 'none';
-        toggleAnswerVisibilityBtn.textContent = '👁️ SHOW ANSWER';
-      }
-    });
+    updateQuestionPalette();
+    startTimer(q.timeLimit, q.timeLimit);
   }
 
   // Anti-Cheat Question Copy Block & Tab Switch Proctoring
@@ -2036,7 +2176,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function preventShortcuts(e) {
     if (isProtectedTest) {
-      if ((e.ctrlKey || e.metaKey) && ['c','C','a','A','u','U','p','P','s','S'].includes(e.key)) {
+      if ((e.ctrlKey || e.metaKey) && ['c', 'C', 'a', 'A', 'u', 'U', 'p', 'P', 's', 'S'].includes(e.key)) {
         e.preventDefault();
         return false;
       }
@@ -2193,7 +2333,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (protectedTestBanner) protectedTestBanner.classList.remove('hidden');
     if (liveTabSwitchCount) liveTabSwitchCount.textContent = '0';
 
-    gameState.activeQuestions = test.questions;
+    const questionsList = test.questions || [];
+    const calcTimePerQ = test.durationMinutes ? Math.round((test.durationMinutes * 60) / Math.max(1, questionsList.length)) : 120;
+
+    gameState.activeQuestions = questionsList.map(q => {
+      const parsedTime = parseInt(q.timeLimit, 10);
+      const timeLimit = (!isNaN(parsedTime) && parsedTime > 0) ? parsedTime : calcTimePerQ;
+      let correctIndex = q.correctIndex;
+      if (correctIndex === undefined && q.answer !== undefined) {
+        if (typeof q.answer === 'number') {
+          correctIndex = q.answer;
+        } else if (typeof q.answer === 'string') {
+          const letterMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, '0': 0, '1': 1, '2': 2, '3': 3 };
+          correctIndex = letterMap[q.answer.trim().toUpperCase()] !== undefined ? letterMap[q.answer.trim().toUpperCase()] : 0;
+        }
+      }
+      return {
+        ...q,
+        topic: q.topic || test.subject || 'Quantitative Reasoning',
+        difficulty: q.difficulty || 'medium',
+        timeLimit: timeLimit,
+        correctIndex: correctIndex !== undefined ? correctIndex : 0
+      };
+    });
+
     gameState.currentQuestionIndex = 0;
 
     try {
@@ -2339,5 +2502,122 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn("Audit logs fetch error:", e);
     }
   }
+
+  // ==========================================
+  // 60FPS REAL-TIME GALAXY TWINKLING STARFIELD ENGINE
+  // ==========================================
+  function initGalaxyStarfield() {
+    const canvas = document.getElementById('starfieldCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const numStars = 220;
+    const stars = [];
+    const colors = ['#ffffff', '#c084fc', '#38bdf8', '#fbbf24', '#e2e8f0'];
+
+    for (let i = 0; i < numStars; i++) {
+      stars.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 2.2 + 0.5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        alpha: Math.random(),
+        twinkleSpeed: Math.random() * 0.035 + 0.008,
+        twinkleDirection: Math.random() > 0.5 ? 1 : -1
+      });
+    }
+
+    const shootingStars = [];
+
+    function createShootingStar() {
+      if (Math.random() < 0.035 && shootingStars.length < 3) {
+        shootingStars.push({
+          x: Math.random() * width,
+          y: Math.random() * (height / 2),
+          length: Math.random() * 90 + 50,
+          speed: Math.random() * 12 + 7,
+          angle: Math.PI / 4,
+          alpha: 1
+        });
+      }
+    }
+
+    function renderStarfield() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Render Twinkling Stars
+      stars.forEach(star => {
+        star.alpha += star.twinkleSpeed * star.twinkleDirection;
+        if (star.alpha >= 1) {
+          star.alpha = 1;
+          star.twinkleDirection = -1;
+        } else if (star.alpha <= 0.15) {
+          star.alpha = 0.15;
+          star.twinkleDirection = 1;
+        }
+
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fillStyle = star.color;
+        ctx.globalAlpha = star.alpha;
+        if (star.radius > 1.2) {
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = star.color;
+        } else {
+          ctx.shadowBlur = 0;
+        }
+        ctx.fill();
+      });
+
+      // Render & Update Shooting Stars
+      createShootingStar();
+      for (let i = shootingStars.length - 1; i >= 0; i--) {
+        const ss = shootingStars[i];
+        const endX = ss.x + Math.cos(ss.angle) * ss.length;
+        const endY = ss.y + Math.sin(ss.angle) * ss.length;
+
+        const grad = ctx.createLinearGradient(ss.x, ss.y, endX, endY);
+        grad.addColorStop(0, `rgba(255, 255, 255, ${ss.alpha})`);
+        grad.addColorStop(0.4, `rgba(192, 132, 252, ${ss.alpha * 0.8})`);
+        grad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+
+        ctx.beginPath();
+        ctx.moveTo(ss.x, ss.y);
+        ctx.lineTo(endX, endY);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2.5;
+        ctx.globalAlpha = ss.alpha;
+        ctx.stroke();
+
+        ss.x += Math.cos(ss.angle) * ss.speed;
+        ss.y += Math.sin(ss.angle) * ss.speed;
+        ss.alpha -= 0.016;
+
+        if (ss.alpha <= 0 || ss.x > width || ss.y > height) {
+          shootingStars.splice(i, 1);
+        }
+      }
+
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(renderStarfield);
+    }
+
+    renderStarfield();
+  }
+
+  // Initialize Real-Time Galaxy Starfield Engine
+  initGalaxyStarfield();
+
+  // Auto-start game on initial load so question timer is immediately active
+  startGame(false);
 
 });

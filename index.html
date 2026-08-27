@@ -13,11 +13,13 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700&family=Rajdhani:wght@500;600;700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
-  <!-- DEDICATED FULL-SCREEN LOGIN PAGE WITH DYNAMIC PROFESSION SELECTOR -->
+  <!-- 60FPS REAL-TIME GALAXY STARFIELD CANVAS -->
+  <canvas id="starfieldCanvas"></canvas>
+
+  <!-- DEDICATED FULL-SCREEN LOGIN PAGE -->
   <div id="authLoginPage" class="login-page-screen">
     <div class="login-page-container">
       <div class="login-brand-header">
@@ -26,157 +28,92 @@
         <p class="login-app-subtitle">AI-POWERED ENTERPRISE ASSESSMENT & PROCTORING PLATFORM</p>
       </div>
 
-      <div class="login-portal-card isolated-portal">
-        <div id="loginPortalBadge" class="login-card-badge student-badge">🎓 STUDENT EVALUATION & ASSESSMENT PORTAL
+      <div class="login-portal-card">
+        <!-- 3 Dedicated Portal Navigation Tabs -->
+        <div class="portal-nav-tabs">
+          <button class="portal-tab-btn role-pill active" data-role="student" data-portal="student">🎓 STUDENT
+            LOGIN</button>
+          <button class="portal-tab-btn role-pill" data-role="staff" data-portal="teacher">👨‍🏫 TEACHER LOGIN</button>
+          <button class="portal-tab-btn role-pill" data-role="admin" data-portal="admin">🛡️ ADMIN LOGIN</button>
         </div>
 
+        <div id="loginPortalBadge" class="login-card-badge">🎓 STUDENT EVALUATION & ASSESSMENT PORTAL</div>
+
         <div class="login-form-body">
-
-          <!-- 1. PROFESSION / ROLE SELECTOR (Student, Teacher, Admin) -->
           <div class="form-group">
-            <label for="professionSelect" class="input-label"
-              style="color: var(--accent-cyan-bright); font-weight: 700; letter-spacing: 1px;">SELECT YOUR PROFESSION /
-              ROLE</label>
-            <select id="professionSelect" class="styled-select width-full hidden">
-              <option value="student" selected>🎓 Student</option>
-              <option value="teacher">👨‍🏫 Teacher / Faculty</option>
-              <option value="admin">🛡️ Administrator</option>
-            </select>
+            <label for="usernameInput" class="input-label" id="usernameLabel">STUDENT FULL NAME</label>
+            <input type="text" id="usernameInput" class="text-input" placeholder="Enter your full name..."
+              value="Scholar">
           </div>
 
-          <!-- 2. Google / Gmail Single Click Login Button -->
-          <button id="googleAuthBtn" class="google-auth-btn">
-            <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
-              <path fill="#4285F4"
-                d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
-              <path fill="#34A853"
-                d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z" />
-              <path fill="#FBBC05"
-                d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z" />
-              <path fill="#EA4335"
-                d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z" />
-            </svg>
-            <span id="googleBtnText">SIGN IN / SIGN UP WITH GMAIL (GOOGLE)</span>
-          </button>
-
-          <div class="auth-divider"><span id="dividerText">OR CONTINUE WITH EMAIL OTP</span></div>
-
-          <!-- Name Input -->
           <div class="form-group">
-            <label for="usernameInput" class="input-label" id="usernameLabel">FULL NAME</label>
-            <input type="text" id="usernameInput" class="text-input" placeholder="e.g. Alex Scholar" value="Scholar">
+            <label for="emailInput" class="input-label" id="emailLabel">STUDENT EMAIL ADDRESS</label>
+            <input type="email" id="emailInput" class="text-input" placeholder="candidate@example.com"
+              value="scholar@example.com">
           </div>
 
-          <!-- Email Input & Send OTP -->
-          <div class="form-group" id="emailGroup">
-            <label for="emailInput" class="input-label" id="emailLabel">GMAIL / EMAIL ADDRESS</label>
-            <div style="display: flex; gap: 0.6rem; width: 100%;">
-              <input type="email" id="emailInput" class="text-input" style="flex: 1;" placeholder="candidate@gmail.com"
-                value="scholar@gmail.com">
-              <button id="sendOtpBtn" class="hud-btn highlight-btn"
-                style="white-space: nowrap; padding: 0.75rem 1.2rem;">SEND OTP 📧</button>
-            </div>
-          </div>
-
-          <!-- OTP Verification Section -->
-          <div id="otpSection" class="form-group hidden"
-            style="background: rgba(16, 185, 129, 0.12); border: 1px dashed var(--accent-emerald-bright); padding: 1.2rem; border-radius: var(--radius-sm); text-align: center;">
-            <div
-              style="font-family: var(--font-tech); font-weight: 700; font-size: 0.82rem; color: var(--accent-cyan-bright); letter-spacing: 1.5px; margin-bottom: 0.3rem;">
-              📩 VERIFICATION OTP CODE ISSUED</div>
-            <div id="otpDisplayBanner"
-              style="font-family: var(--font-tech); font-weight: 800; font-size: 2.2rem; color: var(--accent-emerald-bright); letter-spacing: 8px; text-shadow: 0 0 16px var(--accent-emerald-glow); margin: 0.2rem 0;">
-              849201</div>
-            <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.8rem;">(Code auto-filled below
-              for instant verification)</div>
-            <input type="text" id="otpInput" class="text-input" maxlength="6" placeholder="ENTER 6-DIGIT OTP"
-              style="letter-spacing: 6px; font-weight: 800; text-align: center; font-size: 1.3rem; color: var(--accent-emerald-bright);">
+          <div class="form-group">
+            <label for="passwordInput" class="input-label" id="passwordLabel">ACCOUNT PASSWORD</label>
+            <input type="password" id="passwordInput" class="text-input"
+              placeholder="Enter password (default: password123)..." value="password123">
           </div>
 
           <div id="authStatusMessage" class="qb-status-msg hidden"></div>
 
+          <!-- Student Evaluation Track Box -->
+          <div id="studentTrackBox" class="avatar-selection-box">
+            <span class="input-label">SELECT EVALUATION TRACK</span>
+            <div class="avatar-grid">
+              <div class="avatar-card selected" data-avatar="🎓" data-name="Quantitative Scholar">
+                <span class="avatar-emoji">🎓</span>
+                <span class="avatar-title">Quantitative Analyst</span>
+              </div>
+              <div class="avatar-card" data-avatar="⚔️" data-name="Logic Strategist">
+                <span class="avatar-emoji">⚔️</span>
+                <span class="avatar-title">Logic Strategist</span>
+              </div>
+              <div class="avatar-card" data-avatar="🚀" data-name="Data Specialist">
+                <span class="avatar-emoji">🚀</span>
+                <span class="avatar-title">Data Specialist</span>
+              </div>
+              <div class="avatar-card" data-avatar="🧙" data-name="Mathematical Master">
+                <span class="avatar-emoji">🧙</span>
+                <span class="avatar-title">Math Master</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Teacher Subject / Department Selector Box -->
+          <div id="teacherDeptBox" class="form-group hidden">
+            <label for="teacherDeptSelect" class="input-label">TEACHER DEPARTMENT / FACULTY SUBJECT</label>
+            <select id="teacherDeptSelect" class="styled-select width-full">
+              <option value="Quantitative Reasoning">Quantitative Aptitude & Mathematics</option>
+              <option value="Logical Reasoning">Logical Reasoning & Analytics</option>
+              <option value="Data Interpretation">Data Analytics & Interpretation</option>
+              <option value="Computer Science">Computer Science & Algorithms</option>
+            </select>
+          </div>
+
+          <!-- Admin Security Passcode Box -->
+          <div id="adminPasscodeBox" class="form-group hidden">
+            <label for="adminPasscodeInput" class="input-label" style="color: var(--accent-cyan-bright);">ADMINISTRATOR
+              SECURITY KEY / PIN</label>
+            <input type="password" id="adminPasscodeInput" class="text-input"
+              placeholder="Enter admin security key (Default: admin123)" value="admin123">
+          </div>
+
           <button id="confirmLoginBtn" class="modal-primary-btn"
-            style="font-size: 1.05rem; padding: 0.95rem; margin-top: 0.5rem; background: linear-gradient(135deg, #06b6d4, #10b981);">VERIFY
-            & ENTER PORTAL ▶</button>
+            style="font-size: 1.05rem; padding: 0.95rem; margin-top: 0.5rem; background: linear-gradient(135deg, #06b6d4, #10b981);">ENTER
+            STUDENT PORTAL ▶</button>
         </div>
       </div>
 
       <div class="login-footer-info">
         <span>🔒 256-Bit Encrypted Access</span>
         <span>•</span>
-        <span>🌐 Google Gmail Single Sign-On</span>
-        <span>•</span>
-        <span>⚡ AI Proctoring Suite</span>
+        <span>⚡ AI-Powered Real-Time Evaluation</span>
       </div>
     </div>
-  </div>
-
-  <!-- INTERACTIVE GOOGLE (GMAIL) AUTHENTICATION MODAL -->
-  <div id="googleAuthModal" class="modal-overlay hidden">
-    <div class="modal-card google-modal-card">
-      <div class="google-modal-header">
-        <svg width="24" height="24" viewBox="0 0 24 24">
-          <path fill="#4285F4"
-            d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
-          <path fill="#34A853"
-            d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z" />
-          <path fill="#FBBC05"
-            d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z" />
-          <path fill="#EA4335"
-            d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z" />
-        </svg>
-        <span style="font-weight: 700; font-size: 1.1rem; color: #1e293b;">Sign in with Google</span>
-      </div>
-
-      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1.2rem;">Choose your Google account to proceed to
-        <strong id="gAuthTargetRole">Student Portal</strong>:
-      </p>
-
-      <div class="google-accounts-list">
-        <!-- Quick Account Picker 1 -->
-        <div class="g-account-item" data-email="scholar.google@gmail.com" data-name="Scholar Google">
-          <div class="g-avatar">S</div>
-          <div class="g-acc-info">
-            <div class="g-name">Scholar Google</div>
-            <div class="g-email">scholar.google@gmail.com</div>
-          </div>
-          <span class="g-badge">Google Verified</span>
-        </div>
-
-        <!-- Quick Account Picker 2 -->
-        <div class="g-account-item" data-email="hariatharrsh18@gmail.com" data-name="Hari Atharrsh">
-          <div class="g-avatar" style="background: #10b981;">H</div>
-          <div class="g-acc-info">
-            <div class="g-name">Hari Atharrsh</div>
-            <div class="g-email">hariatharrsh18@gmail.com</div>
-          </div>
-          <span class="g-badge">Google Verified</span>
-        </div>
-      </div>
-
-      <!-- Custom Gmail Input -->
-      <div style="margin-top: 1rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
-        <label style="font-size: 0.75rem; font-weight: 700; color: #475569; display: block; margin-bottom: 0.4rem;">OR
-          ENTER ANY GMAIL ADDRESS</label>
-        <div style="display: flex; gap: 0.5rem;">
-          <input type="email" id="gCustomEmailInput" class="text-input"
-            style="flex: 1; background: #f8fafc; color: #0f172a; border-color: #cbd5e1;"
-            placeholder="your.name@gmail.com">
-          <button id="gCustomSubmitBtn" class="hud-btn highlight-btn"
-            style="white-space: nowrap; background: #2563eb; color: #ffffff;">Sign In ▶</button>
-        </div>
-      </div>
-
-      <div style="display: flex; justify-content: flex-end; margin-top: 1.2rem;">
-        <button id="closeGoogleAuthBtn" class="modal-secondary-btn" style="color: #64748b;">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="login-footer-info">
-    <span>⚡ AI-Powered Real-Time Evaluation</span>
-  </div>
-  </div>
   </div>
 
   <!-- Main Application Container -->
@@ -230,10 +167,6 @@
 
         <button id="teacherQbBtn" class="hud-btn teacher-btn" title="Teacher Question Bank Creator & Test Assignor">
           👨‍🏫 TEACHER PORTAL
-        </button>
-
-        <button id="adminAuditBtn" class="hud-btn admin-btn" title="Admin Audit Logs & Device Proctoring Dashboard">
-          🛡️ ADMIN AUDIT LOGS
         </button>
 
         <button id="friendsBtn" class="hud-btn multiplayer-btn" title="Invite Candidate / Share Room Link">
@@ -338,29 +271,6 @@
           </button>
         </div>
 
-        <!-- Detailed Solution & Derivation Banner -->
-        <div id="feedbackBanner" class="feedback-banner hidden">
-          <div class="feedback-status-row">
-            <span id="feedbackIcon" class="feedback-icon">✓</span>
-            <span id="feedbackTitle" class="feedback-title">ANSWER EVALUATION</span>
-            <span id="xpGainedBadge" class="xp-gained-badge">+100 PTS</span>
-          </div>
-          <div id="explanationText" class="explanation-text"></div>
-          <button id="nextBtn" class="next-btn">NEXT QUESTION ▶</button>
-        </div>
-
-        <!-- Student Self-Practice Answer & Explanation Display Below Options -->
-        <div id="practiceAnswerBox" class="practice-answer-box hidden">
-          <div class="practice-ans-header">
-            <span>💡 AI GENERATED SOLUTION & PRACTICE ANSWER</span>
-            <button id="toggleAnswerVisibilityBtn" class="link-btn"
-              style="font-size: 0.8rem; color: var(--accent-emerald-bright);">👁️ HIDE ANSWER</button>
-          </div>
-          <div id="practiceAnswerText" class="practice-ans-text">Option A: 12.5 m/s</div>
-          <div id="practiceExplanationText" class="practice-explanation">To convert km/hr to m/s, multiply by 5/18. So
-            45 * 5/18 = 12.5 m/s.</div>
-        </div>
-
         <!-- Protected Test Anti-Cheat Tab Switch Live Banner -->
         <div id="protectedTestBanner" class="tab-switch-banner hidden" style="margin-top: 1rem;">
           <span style="font-size: 1.2rem;">🔒</span>
@@ -409,21 +319,15 @@
       </div>
 
       <div class="form-group">
-        <label for="emailInput" class="input-label">EMAIL ADDRESS (FIRST SIGNUP VERIFICATION)</label>
-        <div style="display: flex; gap: 0.5rem; width: 100%;">
-          <input type="email" id="emailInput" class="text-input" style="flex: 1;" placeholder="candidate@example.com"
-            value="scholar@example.com">
-          <button id="sendOtpBtn" class="hud-btn highlight-btn" style="white-space: nowrap;">SEND OTP 📧</button>
-        </div>
+        <label for="emailInput" class="input-label">EMAIL ADDRESS</label>
+        <input type="email" id="emailInput" class="text-input" placeholder="candidate@example.com"
+          value="scholar@example.com">
       </div>
 
-      <!-- OTP Verification Input Section -->
-      <div id="otpSection" class="form-group hidden"
-        style="background: var(--bg-card); border: 1px solid var(--accent-cyan-border); padding: 0.9rem; border-radius: var(--radius-sm);">
-        <label for="otpInput" class="input-label" style="color: var(--accent-emerald-bright);">ENTER 6-DIGIT
-          VERIFICATION OTP</label>
-        <input type="text" id="otpInput" class="text-input" maxlength="6" placeholder="e.g. 849201"
-          style="letter-spacing: 4px; font-weight: 700; text-align: center; font-size: 1.2rem;">
+      <div class="form-group">
+        <label for="passwordInput" class="input-label">ACCOUNT PASSWORD</label>
+        <input type="password" id="passwordInput" class="text-input"
+          placeholder="Enter password (default: password123)..." value="password123">
       </div>
 
       <div id="authStatusMessage" class="qb-status-msg hidden"></div>
@@ -450,7 +354,7 @@
         </div>
       </div>
 
-      <button id="confirmLoginBtn" class="modal-primary-btn">VERIFY OTP & ENTER PORTAL ▶</button>
+      <button id="confirmLoginBtn" class="modal-primary-btn">ENTER PORTAL ▶</button>
     </div>
   </div>
 
@@ -521,6 +425,90 @@
             <input type="checkbox" value="logic" checked>
             <span class="topic-icon">🧩</span>
             <span class="topic-name">Logical Sequences</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="averages" checked>
+            <span class="topic-icon">🍲</span>
+            <span class="topic-name">Averages & Mixtures</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="probability" checked>
+            <span class="topic-icon">🎲</span>
+            <span class="topic-name">Probability & Stats</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="algebra" checked>
+            <span class="topic-icon">📐</span>
+            <span class="topic-name">Algebra & Equations</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="number_system" checked>
+            <span class="topic-icon">🔢</span>
+            <span class="topic-name">Number Systems</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="geometry" checked>
+            <span class="topic-icon">📏</span>
+            <span class="topic-name">Geometry & Mensuration</span>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="permutations" checked>
+            <span class="topic-icon">🔀</span>
+            <span class="topic-name">Permutations & Comb.</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="data_interpretation" checked>
+            <span class="topic-icon">📊</span>
+            <span class="topic-name">Data Interpretation</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="clocks_calendars" checked>
+            <span class="topic-icon">📅</span>
+            <span class="topic-name">Clocks & Calendars</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="syllogisms" checked>
+            <span class="topic-icon">🧠</span>
+            <span class="topic-name">Syllogisms & Deductions</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="pipes_cisterns" checked>
+            <span class="topic-icon">🌊</span>
+            <span class="topic-name">Pipes & Cisterns</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="boats_streams" checked>
+            <span class="topic-icon">🚤</span>
+            <span class="topic-name">Boats & Streams</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="simplification" checked>
+            <span class="topic-icon">🔢</span>
+            <span class="topic-name">Simplification & Approx</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="blood_relations" checked>
+            <span class="topic-icon">👨‍👩‍👧</span>
+            <span class="topic-name">Blood Relations</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="directions" checked>
+            <span class="topic-icon">🧭</span>
+            <span class="topic-name">Direction Sense</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="series_completion" checked>
+            <span class="topic-icon">🔤</span>
+            <span class="topic-name">Number & Letter Series</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="coding_decoding" checked>
+            <span class="topic-icon">🔐</span>
+            <span class="topic-name">Coding & Decoding</span>
+          </label>
+          <label class="topic-checkbox-card">
+            <input type="checkbox" value="data_sufficiency" checked>
+            <span class="topic-icon">💡</span>
+            <span class="topic-name">Data Sufficiency</span>
           </label>
         </div>
       </div>
@@ -674,28 +662,95 @@
 
   <!-- 7. ASSESSMENT PERFORMANCE REPORT MODAL -->
   <div id="victoryOverlay" class="modal-overlay hidden">
-    <div class="modal-card victory-card">
+    <div class="modal-card victory-card" style="max-width: 720px; max-height: 90vh; overflow-y: auto;">
       <div class="modal-header-icon trophy">📊</div>
       <h2 class="title-gold">ASSESSMENT EVALUATION REPORT</h2>
-      <p class="modal-subtitle">You have completed the aptitude assessment suite!</p>
+      <p class="modal-subtitle" id="vicCandidateSub">Official Candidate Scorecard & AI Solutions Reference</p>
 
-      <div class="stats-summary">
-        <div class="stat-item">
-          <span class="stat-label">TOTAL SCORE</span>
-          <span id="vicFinalScore" class="stat-val highlight">0</span>
+      <!-- Candidate Profile Info Header -->
+      <div id="vicCandidateCard" class="user-card-preview"
+        style="margin-bottom: 0.5rem; width: 100%; display: flex; align-items: center; justify-content: space-between; background: rgba(15, 23, 42, 0.7); padding: 0.9rem 1.1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 0.8rem;">
+          <div class="user-avatar" id="vicAvatar" style="font-size: 1.8rem;">🎓</div>
+          <div style="text-align: left;">
+            <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-main);" id="vicCandidateName">Scholar
+              Student</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);" id="vicCandidateEmail">scholar@university.edu •
+              Candidate Session</div>
+          </div>
         </div>
-        <div class="stat-item">
-          <span class="stat-label">ACCURACY</span>
-          <span id="vicAccuracy" class="stat-val">100%</span>
+        <div>
+          <span id="vicPassStatusBadge" class="difficulty-badge easy"
+            style="padding: 0.35rem 0.9rem; font-size: 0.85rem; font-weight: 800;">PASSED</span>
         </div>
       </div>
 
-      <div class="rank-badge-box">
+      <!-- Stats Summary Grid -->
+      <div class="stats-summary"
+        style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.8rem; width: 100%;">
+        <div class="stat-item" style="text-align: center;">
+          <span class="stat-label">TOTAL SCORE</span>
+          <span id="vicFinalScore" class="stat-val highlight"
+            style="color: var(--accent-amber); font-size: 1.5rem; font-weight: 800;">0</span>
+        </div>
+        <div class="stat-item" style="text-align: center;">
+          <span class="stat-label">CORRECT ANSWERS</span>
+          <span id="vicCorrectCount" class="stat-val"
+            style="color: var(--accent-emerald-bright); font-size: 1.3rem; font-weight: 800;">0 / 0</span>
+        </div>
+        <div class="stat-item" style="text-align: center;">
+          <span class="stat-label">ACCURACY</span>
+          <span id="vicAccuracy" class="stat-val"
+            style="color: var(--accent-cyan-bright); font-size: 1.3rem; font-weight: 800;">100%</span>
+        </div>
+        <div class="stat-item" style="text-align: center;">
+          <span class="stat-label">MAX STREAK</span>
+          <span id="vicStreak" class="stat-val" style="color: #c084fc; font-size: 1.3rem; font-weight: 800;">0x</span>
+        </div>
+      </div>
+
+      <div class="rank-badge-box" style="margin-bottom: 1.2rem; width: 100%;">
         <span class="rank-title">PERFORMANCE GRADE:</span>
         <span id="vicRankBadge" class="rank-name">DISTINCTION (QUANTITATIVE REASONING)</span>
       </div>
 
-      <button id="playAgainBtn" class="modal-primary-btn success-btn">START NEW ASSESSMENT ↺</button>
+      <!-- Sector Improvement Analysis Box -->
+      <div id="vicSectorAnalysisCard"
+        style="width: 100%; margin-bottom: 1.2rem; text-align: left; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); padding: 0.9rem 1.1rem; border-radius: var(--radius-sm); border-left: 4px solid #ef4444;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem;">
+          <span
+            style="font-family: var(--font-tech); font-weight: 800; font-size: 0.82rem; color: #ef4444; letter-spacing: 1px;">🎯
+            SECTOR IMPROVEMENT ANALYSIS</span>
+          <span id="vicWeakSectorTag" class="difficulty-badge hard" style="font-size: 0.75rem; font-weight: 800;">NEEDS
+            IMPROVEMENT</span>
+        </div>
+        <div id="vicSectorAdviceText"
+          style="font-size: 0.88rem; color: var(--text-main); line-height: 1.5; font-weight: 500;">
+          Candidate requires practice in <strong id="vicTargetSectorName" style="color: #ef4444;">Time &
+            Distance</strong>. Review official derivations below.
+        </div>
+      </div>
+
+      <!-- Prominent AI-Generated Answers & Solutions Section -->
+      <div style="width: 100%; text-align: left; margin-bottom: 1.2rem;">
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border-color);">
+          <span class="section-label" style="font-size: 0.88rem; color: var(--accent-cyan-bright); font-weight: 800;">🤖
+            AI-GENERATED ANSWERS & SOLUTIONS REFERENCE</span>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Step-by-step mathematical derivations</span>
+        </div>
+
+        <div id="vicAiSolutionsList" style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
+          <!-- Dynamic AI Solution Cards Populated by JS -->
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; width: 100%; margin-top: 0.5rem;">
+        <button id="printScorecardBtn" class="modal-secondary-btn"
+          style="flex: 1; padding: 0.75rem; font-weight: 700;">🖨️ PRINT SCORECARD</button>
+        <button id="playAgainBtn" class="modal-primary-btn success-btn"
+          style="flex: 2; padding: 0.75rem; font-weight: 800;">START NEW ASSESSMENT ↺</button>
+      </div>
     </div>
   </div>
 
@@ -865,103 +920,6 @@
         <button id="adminRefreshBtn" class="modal-secondary-btn highlight">🔄 REFRESH LIVE FEED</button>
         <button id="adminExportCsvBtn" class="modal-secondary-btn">📊 EXPORT REPORT (CSV)</button>
         <button id="adminCloseBtn" class="modal-primary-btn">CLOSE MONITOR</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 10. ADMIN COMPREHENSIVE AUDIT LOGS MODAL -->
-  <div id="adminAuditModal" class="modal-overlay hidden">
-    <div class="modal-card admin-monitor-card" style="max-width: 960px;">
-      <div class="modal-header-icon">🛡️</div>
-      <h2>ADMINISTRATION AUDIT & SECURITY PORTAL</h2>
-      <p class="modal-subtitle">Full access logs, test session details, device specs, and anti-cheat cheating alerts.
-      </p>
-
-      <!-- 3 Audit Navigation Tabs -->
-      <div class="audit-tabs-row">
-        <button class="audit-tab-btn active" data-tab="logins">🔑 LOGIN DETAILS LOG (<span
-            id="auditLoginCount">0</span>)</button>
-        <button class="audit-tab-btn" data-tab="tests">📋 TEST DETAILS LOG (<span id="auditTestCount">0</span>)</button>
-        <button class="audit-tab-btn" data-tab="devices">💻 DEVICE SPECS & CHEATING ALERTS (<span
-            id="auditDeviceCount">0</span>)</button>
-      </div>
-
-      <!-- Tab 1: Login Details Table -->
-      <div id="auditLoginsView" class="audit-table-wrapper">
-        <table class="audit-table">
-          <thead>
-            <tr>
-              <th>LOG ID</th>
-              <th>USER NAME</th>
-              <th>EMAIL</th>
-              <th>ROLE</th>
-              <th>TIMESTAMP</th>
-              <th>IP ADDRESS</th>
-              <th>DEVICE / USER-AGENT</th>
-              <th>STATUS</th>
-            </tr>
-          </thead>
-          <tbody id="auditLoginsTableBody">
-            <tr>
-              <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading login
-                details audit log...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Tab 2: Test Details Table -->
-      <div id="auditTestsView" class="audit-table-wrapper hidden">
-        <table class="audit-table">
-          <thead>
-            <tr>
-              <th>ATTEMPT ID</th>
-              <th>TEST TITLE</th>
-              <th>STUDENT NAME</th>
-              <th>EMAIL</th>
-              <th>SCORE</th>
-              <th>ACCURACY</th>
-              <th>STATUS</th>
-              <th>TAB SWITCHES</th>
-              <th>TIME</th>
-            </tr>
-          </thead>
-          <tbody id="auditTestsTableBody">
-            <tr>
-              <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading test
-                details audit log...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Tab 3: Device Specs & Cheating Alerts Table -->
-      <div id="auditDevicesView" class="audit-table-wrapper hidden">
-        <table class="audit-table">
-          <thead>
-            <tr>
-              <th>CANDIDATE</th>
-              <th>TEST NAME</th>
-              <th>BROWSER</th>
-              <th>OS / PLATFORM</th>
-              <th>RESOLUTION</th>
-              <th>IP ADDRESS</th>
-              <th>TAB SWITCH COUNT</th>
-              <th>CHEATING VIOLATION STATUS</th>
-            </tr>
-          </thead>
-          <tbody id="auditDevicesTableBody">
-            <tr>
-              <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading candidate
-                device specifications log...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="modal-btn-row" style="margin-top: 1.2rem;">
-        <button id="refreshAuditBtn" class="modal-secondary-btn highlight">🔄 REFRESH AUDIT LOGS</button>
-        <button id="closeAuditModalBtn" class="modal-primary-btn">CLOSE PORTAL</button>
       </div>
     </div>
   </div>

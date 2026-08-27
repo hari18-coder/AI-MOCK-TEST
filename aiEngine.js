@@ -428,7 +428,13 @@ Return strictly raw JSON format:
 
       // Priority 2: Concurrent AI Question Generation (Parallel execution via Promise.all)
       const topicList = [];
-      const safeTopics = (topics && topics.length > 0) ? topics : ["time", "profit", "percentage", "ratio", "interest", "partnership", "logic"];
+      const safeTopics = (topics && topics.length > 0) ? topics : [
+        "time", "profit", "percentage", "ratio", "interest", "partnership", "logic",
+        "averages", "probability", "algebra", "number_system", "geometry", "permutations",
+        "data_interpretation", "clocks_calendars", "syllogisms", "pipes_cisterns",
+        "boats_streams", "simplification", "blood_relations", "directions",
+        "series_completion", "coding_decoding", "data_sufficiency"
+      ];
       for (let i = 0; i < count; i++) {
         topicList.push(safeTopics[i % safeTopics.length]);
       }
@@ -541,17 +547,36 @@ Return strictly raw JSON format without markdown code blocks:
     generateProceduralQuestion(topicKey, difficulty, timeLimit) {
       switch (topicKey) {
         case 'time':
+        case 'pipes_cisterns':
           return this.generateTimeQuestion(difficulty, timeLimit);
         case 'profit':
+        case 'simplification':
           return this.generateProfitQuestion(difficulty, timeLimit);
         case 'percentage':
+        case 'averages':
           return this.generatePercentageQuestion(difficulty, timeLimit);
         case 'ratio':
+        case 'partnership':
           return this.generateRatioQuestion(difficulty, timeLimit);
         case 'interest':
+        case 'boats_streams':
           return this.generateInterestQuestion(difficulty, timeLimit);
-        case 'partnership':
-          return this.generatePartnershipQuestion(difficulty, timeLimit);
+        case 'probability':
+        case 'permutations':
+          return this.generateRatioQuestion(difficulty, timeLimit);
+        case 'algebra':
+        case 'number_system':
+          return this.generateInterestQuestion(difficulty, timeLimit);
+        case 'geometry':
+        case 'data_interpretation':
+          return this.generateProfitQuestion(difficulty, timeLimit);
+        case 'clocks_calendars':
+        case 'syllogisms':
+        case 'blood_relations':
+        case 'directions':
+        case 'series_completion':
+        case 'coding_decoding':
+        case 'data_sufficiency':
         case 'logic':
         default:
           return this.generateLogicQuestion(difficulty, timeLimit);
@@ -563,16 +588,16 @@ Return strictly raw JSON format without markdown code blocks:
       if (difficulty === 'easy') {
         const trainTypes = ['express train', 'bullet train', 'passenger train', 'cargo train'];
         const trainName = trainTypes[this.rand(0, trainTypes.length - 1)];
-        const speedKm = this.rand(4, 14) * 10;
-        const timeSec = this.rand(2, 8) * 3;
+        const speedKm = this.rand(2, 7) * 18; // Multiples of 18 (e.g. 36, 54, 72, 90, 108, 126) for exact m/s conversion
+        const timeSec = this.rand(3, 12) * 2; // e.g. 6 to 24 seconds
 
-        const speedMs = (speedKm * 5) / 18;
-        const lengthTrain = Math.round(speedMs * timeSec);
+        const speedMs = (speedKm * 5) / 18; // Exact integer m/s
+        const lengthTrain = speedMs * timeSec;
 
         const correctAns = `${lengthTrain} meters`;
-        const wrong1 = `${lengthTrain + this.rand(2, 5) * 10} meters`;
-        const wrong2 = `${Math.max(50, lengthTrain - this.rand(2, 5) * 10)} meters`;
-        const wrong3 = `${lengthTrain + this.rand(6, 9) * 10} meters`;
+        const wrong1 = `${lengthTrain * 3.6} meters`; // Forgot km/h to m/s conversion (speedKm * timeSec)
+        const wrong2 = `${Math.max(50, lengthTrain - 40)} meters`;
+        const wrong3 = `${lengthTrain + 60} meters`;
         const options = this.shuffle([correctAns, wrong1, wrong2, wrong3]);
 
         return {
@@ -583,7 +608,7 @@ Return strictly raw JSON format without markdown code blocks:
           question: `A ${trainName} traveling at a constant speed of ${speedKm} km/h passes a telegraph pole in ${timeSec} seconds. What is the length of the train?`,
           options,
           correctIndex: options.indexOf(correctAns),
-          explanation: `1. Speed in m/s = ${speedKm} × (5/18) = ${(speedMs).toFixed(2)} m/s.\n2. Length of train = Speed × Time = ${(speedMs).toFixed(2)} × ${timeSec} = ${lengthTrain} meters.`,
+          explanation: `1. Speed in m/s = ${speedKm} × (5/18) = ${speedMs} m/s.\n2. Length of train = Speed × Time = ${speedMs} × ${timeSec} = ${lengthTrain} meters.`,
           traps: {
             [wrong1]: `Forgot to convert km/h to m/s before multiplying time!`,
             [wrong2]: `Subtracted speed offset instead of taking the full product!`,
@@ -591,17 +616,17 @@ Return strictly raw JSON format without markdown code blocks:
           }
         };
       } else if (difficulty === 'medium') {
-        const speed1 = this.rand(4, 9) * 10;
-        const speed2 = this.rand(3, 8) * 10;
-        const relSpeed = speed1 + speed2;
-        const timeSec = this.rand(2, 6) * 3;
+        const speed1 = this.rand(2, 6) * 9;
+        const speed2 = this.rand(2, 6) * 9;
+        const relSpeed = speed1 + speed2; // multiple of 18 or 9
+        const timeSec = this.rand(2, 8) * 2;
         const relSpeedMs = (relSpeed * 5) / 18;
         const combinedLength = Math.round(relSpeedMs * timeSec);
 
         const correctAns = `${combinedLength} meters`;
-        const wrong1 = `${combinedLength + 40} meters`;
-        const wrong2 = `${Math.max(100, combinedLength - 60)} meters`;
-        const wrong3 = `${combinedLength + 90} meters`;
+        const wrong1 = `${Math.round(((Math.abs(speed1 - speed2) * 5) / 18) * timeSec)} meters`; // Same direction trap
+        const wrong2 = `${Math.max(80, combinedLength - 50)} meters`;
+        const wrong3 = `${combinedLength + 75} meters`;
         const options = this.shuffle([correctAns, wrong1, wrong2, wrong3]);
 
         return {
@@ -626,10 +651,16 @@ Return strictly raw JSON format without markdown code blocks:
         const netRate = (1/aTime) + (1/bTime) - (1/cTime);
         const netHours = (1 / netRate).toFixed(1);
 
+        const rateAdd = (1/aTime) + (1/bTime) + (1/cTime);
+        const wrong1Val = (1 / rateAdd).toFixed(1);
+        const wrong2Val = ((aTime + bTime) / 2).toFixed(1);
+        const rateNoB = (1/aTime) - (1/cTime);
+        const wrong3Val = (rateNoB > 0 ? (1 / rateNoB) : (aTime + 4)).toFixed(1);
+
         const correctAns = `${netHours} hours`;
-        const wrong1 = `${aTime} hours`;
-        const wrong2 = `${bTime} hours`;
-        const wrong3 = `${(parseFloat(netHours) + 2).toFixed(1)} hours`;
+        const wrong1 = `${wrong1Val} hours`;
+        const wrong2 = `${wrong2Val} hours`;
+        const wrong3 = `${wrong3Val} hours`;
         const options = this.shuffle([correctAns, wrong1, wrong2, wrong3]);
 
         return {
